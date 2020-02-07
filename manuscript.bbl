@@ -1,0 +1,116 @@
+\begin{thebibliography}{10}
+
+\bibitem{pmid30084865}
+Lightbody, G., Haberland, V., Browne, F., Taggart, L., Zheng, H., Parkes, E.,
+  and Blayney, J.~K. (September, 2019)
+{Review of applications of high-throughput sequencing in personalized medicine:
+  barriers and facilitators of future progress in research and clinical
+  application.}.
+{\em {Brief. Bioinformatics},} {\bf 20}(5), 1795--1811.
+
+\bibitem{Wikillu}
+{Wikipedia contributors}
+\url{https://en.wikipedia.org/wiki/Illumina,\_Inc.} (2019)
+[Online; accessed 30-December-2019].
+
+\bibitem{ferragina2000opportunistic}
+Ferragina, P. and Manzini, G. (2000)
+Opportunistic data structures with applications.
+In \emph{Foundations of Computer Science, 2000. Proceedings. 41st Annual
+  Symposium on} IEEE
+pp. 390--398.
+
+\bibitem{ferragina2005indexing}
+Ferragina, P. and Manzini, G. (2005)
+Indexing compressed text.
+{\em Journal of the ACM (JACM),} {\bf 52}(4), 552--581.
+
+\bibitem{burrows1994block}
+Burrows, M. and Wheeler, D. (1994)
+A Block-Sorting Lossless Data Compression Algorithm.
+In \emph{DIGITAL SRC RESEARCH REPORT} Citeseer.
+
+\bibitem{manber1993suffix}
+Manber, U. and Myers, G. (1993)
+Suffix arrays: a new method for on-line string searches.
+{\em siam Journal on Computing,} {\bf 22}(5), 935--948.
+
+\bibitem{li2013aligning}
+Li, H. (2013)
+Aligning sequence reads, clone sequences and assembly contigs with {BWA-MEM}.
+{\em arXiv preprint arXiv:1303.3997,}.
+
+\bibitem{pmid22388286}
+Langmead, B. and Salzberg, S.~L. (March, 2012)
+{Fast gapped-read alignment with Bowtie 2.}.
+{\em {Nat. Methods},} {\bf 9}(4), 357--9.
+
+\bibitem{pmid27043002}
+Bray, N.~L., Pimentel, H., Melsted, P., and Pachter, L. (05, 2016)
+{Near-optimal probabilistic RNA-seq quantification.}.
+{\em {Nat. Biotechnol.},} {\bf 34}(5), 525--7.
+
+\bibitem{pmid19505943}
+Li, H., Handsaker, B., Wysoker, A., Fennell, T., Ruan, J., Homer, N., Marth,
+  G., Abecasis, G., and and, R.~D. (August, 2009)
+{The Sequence Alignment/Map format and SAMtools.}.
+{\em {Bioinformatics},} {\bf 25}(16), 2078--9.
+
+\bibitem{pmid23104886}
+Dobin, A., Davis, C.~A., Schlesinger, F., Drenkow, J., Zaleski, C., Jha, S.,
+  Batut, P., Chaisson, M., and Gingeras, T.~R. (January, 2013)
+{STAR: ultrafast universal RNA-seq aligner.}.
+{\em {Bioinformatics},} {\bf 29}(1), 15--21.
+
+\bibitem{pmid23103880}
+Marco-Sola, S., Sammeth, M., Guigó, R., and Ribeca, P. (December, 2012)
+{The GEM mapper: fast, accurate and versatile alignment by filtration.}.
+{\em {Nat. Methods},} {\bf 9}(12), 1185--8.
+
+\bibitem{ACGT}
+{More madness with MAPQ scores (a.k.a. why bioinformaticians hate poor and
+  incomplete software documentation)}.
+\url{http://www.acgt.me/blog/2015/3/17/more-madness-with-mapq-scores-aka-why-bioinformaticians-hate-poor-and-incomplete-software-documentation}
+  (2015)
+[Online; accessed 30-December-2019].
+
+\bibitem{QCFail}
+{MAPQ values are really useful but their implementation is a mess}.
+\url{https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/}
+  (2016)
+[Online; accessed 30-December-2019].
+
+\bibitem{Filion619155}
+Filion, G.~J., Cortini, R., and Zorita, E. (2019)
+Calibrating seed-based alignment heuristics with Sesame.
+{\em bioRxiv preprint doi:10.1101/619155,}.
+
+\bibitem{flajolet2009analytic}
+Flajolet, P. and Sedgewick, R. (2009)
+Analytic combinatorics,
+cambridge University press, .
+
+\bibitem{fischer2017dismantling}
+Fischer, J. and Kurpicz, F. (2017)
+Dismantling divsufsort.
+{\em arXiv preprint arXiv:1710.01896,}.
+
+\bibitem{blog}
+{A tutorial on Burrows-Wheeler indexing methods}.
+\url{http://blog.thegrandlocus.com/2016/07/a-tutorial-on-burrows-wheeler-indexing-methods}
+  (2016)
+[Online; accessed 13-January-2019].
+
+\bibitem{pmid5420325}
+Needleman, S.~B. and Wunsch, C.~D. (March, 1970)
+{A general method applicable to the search for similarities in the amino acid
+  sequence of two proteins.}.
+{\em {J. Mol. Biol.},} {\bf 48}(3), 443--53.
+
+\bibitem{pmid2231712}
+Altschul, S.~F., Gish, W., Miller, W., Myers, E.~W., and Lipman, D.~J.
+  (October, 1990)
+{Basic local alignment search tool.}.
+{\em {J. Mol. Biol.},} {\bf 215}(3), 403--10.
+
+\end{thebibliography}
