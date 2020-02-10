@@ -154,34 +154,34 @@ accuracy.
 
 \section{MATERIALS AND METHODS}
 
-\subsection{Estimating the number of duplicates}
+\subsection{Estimating the number of paralogs}
 
-The main source of uncertainty in the measurements of mapping quality
-estimation is the existence of sequence duplicates. Duplicates are groups
-of sequences that are not exactly identical but share high levels of
-similarity, likely because they co-evolved together or resulted from
-horizontal DNA transfer events. Duplicate sequences are hard to map
-reliably because the similarities between the read and the secondary
-candidate references are not negligible. At the same time, the exact
-probability that the read originated from one of the duplicates is
-difficult to quantify in practice. In this section we introduce a method
-to estimate the number of duplicates of a sequence. This estimate is
-crucial in the whole process of mapping quality computation because the
-number of duplicates will be the main determinant of the quality range.
+The main source of uncertainty in the mapping is the existence of
+near-repetitive sequences, here referred to as paralogs. Paralogs are
+groups of sequences that share high levels of similarity, likely because
+they resulted from duplication or horizontal DNA transfer events. Paralogs
+are hard to map reliably because the read can be similar to some secondary
+candidates. At the same time, the exact probability that the read
+originated from one of the paralogs is difficult to quantify in practice.
+In this section we introduce a method to estimate the number of paralogs
+of a sequence. This estimate is crucial in the whole process of computing
+the mapping quality because the number of paralogs will be the main
+determinant of the quality.
 
 We assume that the true location of the read is a sequence of the genome
-that has $N \geq 0$ duplicates. For every nucleotide, the probability that
-a duplicate differs from the target is a constant $\mu$, and the
-probability that the read differs from the target is a constant $p$. We
-further assume that the genome has size $G$ and that its composition is an
-equiprobable random mix of the four nucleotides.
+that has $N \geq 0$ paralogs. For every nucleotide, the probability that a
+paralog differs from the target is a constant $\mu$ (this event is a
+mutation), and the probability that the read differs from the target is a
+constant $p$ (this event is a sequencing error). We further assume that
+the genome has size $G$ and that its composition is an equiprobable random
+mix of the four nucleotides.
 
 For every nucleotide, the probability that the read differs from a given
-duplicate is $\lambda = (1-p)\mu + p(1-\mu/3)$. The probability that the
-duplicate matches the last $L$ nucleotides of the read is thus $a_L =
+paralog is $\lambda = (1-p)\mu + p(1-\mu/3)$. The probability that the
+paralog matches the last $L$ nucleotides of the read is thus $a_L =
 (1-\lambda)^L$, and the probability that at least one of the the $N$
-duplicates matches them is $1-(1-a_L)^N$. Finally, the probability that
-some duplicate matches the last $L$ nucleotides of the read, but none
+paralogs matches them is $1-(1-a_L)^N$. Finally, the probability that
+some paralog matches the last $L$ nucleotides of the read, but none
 matches the last $L+1$ is $\ell(L|N) = (1-a_{L+1})^N-(1-a_L)^N.$
 
 From the expression above, it is possible to estimate $N$ by the maximum
@@ -199,8 +199,8 @@ query until there are fewer than two hits in the genome (when there is
 only one hit, it is most likely the target). This is not exactly a maximum
 likelihood estimate because we should specifically account for the target
 as one of the hits. Also, $\mu$ is usually unknown, so we take a
-conservative approach and set $\mu$ to a value where the recall is low for
-reads in the range 50--150~bp (for MEM seeds we set $\mu = 0.06$).
+conservative approach and set $\mu$ to a value where the recall is lowest
+for reads in the range 50--150~bp (for MEM seeds we set $\mu = 0.06$).
 
 Finally, the formula is symmetric so we can obtain two estimates of $N$,
 one from each end of the read, and average them for more robustness. Note
@@ -208,41 +208,41 @@ that expression (\ref{eq_mle}) is a maximum likelihood estimate, but the
 final estimate of $N$ is not, because of the approximations mentioned
 above.
 
-\subsection{Computing MAPQ}
+\subsection{Mapping quality}
 
-Based on the estimate of the number of duplicates, we define three
+Based on the estimate of the number of paralogs, we define three
 different groups of reads. The mapping quality for each read group
 is computed differently because the dominant mapping uncertainty
-depends on the number of duplicates.
+depends on the number of paralogs.
 
 \subsubsection{Super quality} Super reads are defined as reads that
 satisfy the two following conditions: 20-mers extracted every 10
 nucleotides all have a single hit in the genome (see the Results section
 and Figure~\ref{fig_supertest}), and the read is mapped without mismatch.
-Super reads are mapped to an incorrect location iif:
+Super reads are mapped to an incorrect location if:
 \begin{enumerate}
-  \item the read contains $m$ errors
-  \item the target has exactly one duplicate
-  \item the duplicate differs from the target exactly at the $m$ locations
-    of the errors
-  \item the $m$ incorrect nucleotides match the sequence of the duplicate
-  \item the $m$ errors are in the odd-numbered 10-mers of the read
+  \item the read contains $m$ errors,
+  \item the target has exactly one paralog,
+  \item the paralog differs from the target exactly at the $m$ locations
+    of the errors,
+  \item the $m$ incorrect nucleotides match the sequence of the paralog,
+  \item the $m$ errors are in the odd-numbered 10-mers of the read.
 \end{enumerate}
 The justification for these conditions are explained in more detail in
 Figure~\ref{fig_supread}.
 
-The last condition imposes $m = 1 + \lfloor L/20 \rfloor$ for a read of size
-$L$. The probability of condition $1$ is denoted $\alpha$. The probability
-of condition $2$ is ${L \choose m}p^m(1-p)^{L-m}$, where $p$ is the error
-rate of the read sequencer. The probability of condition $3$ is
-$\mu^m(1-\mu)^{L-m}$, where $\mu$ is the probability that the duplicate
-differs from the target. The probability of condition $4$ is $1/3^m$ and the
-probability of condition $5$ is $10^m/{L\choose m}$.
+The last condition imposes $m = 1 + \lfloor L/20 \rfloor$ for a read of
+size $L$. The probability of condition $1$ is denoted $\alpha$. The
+probability of condition $2$ is ${L \choose m}p^m(1-p)^{L-m}$, where $p$
+is the error rate of the sequencer. The probability of condition $3$
+is $\mu^m(1-\mu)^{L-m}$, where $\mu$ is the probability that the paralog
+differs from the target. The probability of condition $4$ is $1/3^m$ and
+the probability of condition $5$ is $10^m/{L\choose m}$.
 
 We need to multiply the probability of each condition together and divide
-them by the probability that a read is a \emph{super read}, which is fraction
-$\beta$ of the probability that a read has no error. The mapping quality of
-super reads is finally computed as
+them by the probability that a read is a \emph{super read}, which is a
+fraction $\beta$ of the probability that a read has no error. The mapping
+quality of super reads is finally computed as
 \begin{align}
 \label{eq_super}
 \frac{\alpha}{\beta} \left( \frac{3.33 \cdot p\mu}{1-p}
@@ -254,21 +254,21 @@ and $\alpha/\beta$ was observed empirically to be close to 0.1.
 
 
 \subsubsection{Normal quality} Reads with initial estimate $N \leq 20$ are
-mapped by checking all the candidates. The prior probability that the true
-location is not discovered can be calculated with
-\texttt{sesame}~\cite{Filion619155}. We can gain precision by computing the
-posterior probability given the number of mismatches (intuitively, a large
-number of mismatches is evidence that the read is mapped to an incorrect
-location). If the read is mapped to the correct location, the number of
-errors follows a binomial distribution where the parameter $p$ is the
-error rate of the sequencer. If it is mapped to a paralog, the parameter
-is $\lambda$ as defined above. A complication is that the distribution of
-errors is not binomial when $N > 1$ because the best hit is not chosen
-randomly among the $N$ paralogs. We thus compute the posterior probablity
-using Bayes formula, but put an upper threshold equal to 1 on the
-log-ratio of the evidence. This means that many mismatches is strong
-support for an incorrect location, but few mismatches is only weak support
-for the correct location.
+aligned to all the locations. The prior probability that the true location
+was not discovered at the seeding step can be calculated with
+\texttt{sesame}~\cite{Filion619155}. We can gain precision by computing
+the posterior probability given the number of mismatches (intuitively, a
+large number of mismatches is evidence that the read is mapped to an
+incorrect location). If the read is mapped to the correct location, the
+number of errors follows a binomial distribution where the parameter $p$
+is the error rate of the sequencer. If it is mapped to a paralog, the
+parameter is $\lambda$ as defined above. A complication is that the
+distribution of errors is not binomial when $N > 1$ because the best hit
+is not chosen randomly among the $N$ paralogs. We thus compute the
+posterior probablity using Bayes' formula, but put an upper threshold equal
+to 1 on the log-ratio of the evidence. This means that many mismatches
+give strong support for an incorrect location, but few mismatches give
+only weak support for the correct location.
 
 Assuming that the read is mapped with $x$ mismatches, the probability that
 the location is incorrect is computed as
@@ -282,12 +282,12 @@ where $P(N \geq 1)$ is a probability computed during the estimation of $N$
 (see below).
 
 It was verified empirically that expression (\ref{eq_bayes}) is an
-overestimate when $x = 0$. In this case, the estimate is replaced by a
-direct approach where we compute the probability that a paralog matches
-the read perfectly. More specifically, we compute the probability that the
-read has exactly one error and that a paralog matches the incorrect
-sequence. In this case, the probability that the location is incorrect is
-computed as
+overestimate when $x = 0$ (because here the upper threshold of 1 is too
+pessimistic). In this case, the estimate is replaced by a direct approach
+where we compute the probability that a paralog matches the read
+perfectly. More specifically, we compute the probability that the read has
+exactly one error and that a paralog matches the incorrect sequence. In
+this case, the probability that the location is incorrect is computed as
 \begin{align}
 \label{eq_x0}
 P(N \geq 1) \cdot \frac{Lp(1-p)^{L-1}
@@ -299,20 +299,20 @@ gives a high proability that MEM seeding fails for reads of size 50--150.
 
 
 \subsubsection{Low quality} Reads with initial estimate $N > 20$ are
-mapped by checking only the longest MEM seed. A seed of size $S$ exists if
+aligned only to the longest MEM seed. A seed of size $S$ exists if
 there are $S$ nucleotides without error or if there are $S$ nucleotides
 with possibly many errors matching at least one of the $N$ paralogs. In the
 first case, the target is discovered, in the second it is not. We also have
-to account whether the seed is flanked by errors or by the end of the read.
+to know whether the seed is flanked by errors or by the end of the read.
 The probability of the first case is
 \begin{align*}
 P_{\text{hit}} = \delta_L \cdot (1-p)^S \cdot \delta_R,
 \end{align*}
 where $\delta_{L/R} = 1$ if the seed is flanked by the end of the read and
-$p$ otherwise.
+$\delta_{L/R} = p$ otherwise.
 
-Considering only the most frequent case with a single error, the probability
-of the second case is
+Considering only the most frequent case with a single error, the
+probability of the second case is
 \begin{equation*}
 \begin{split}
 P_{\text{miss}} = \; &\delta_L \cdot Sp(1-p)^{S-1} \cdot \delta_R  \\
@@ -338,12 +338,13 @@ target is unique. Case $ii.$ can occur when the read straddles the end of
 a transposon or other repeated sequence. We consider that $N \geq 1$ only
 in case $i.$ where the sequence has a full-length paralog.
 
-We denote $m$ the longest query size with two more more hits in the genome
-(see Figure~\ref{fig_back}) and we write $P(m)$ in the three cases above.
-The genome has size $G$ and every nucleotide matches the query with
-probability $1/4$ if it is unrelated to the target, and with probability
-$\lambda$ if it is a paralog. For convenience, we also define the
-probability of a random hit of size less than $m$ as $\xi(m) = 1-1/4^m$.
+We denote $m$ the longest query size with two or more hits in the genome
+(see Figure~\ref{fig_back}) and we work the probability $P(m)$ in the
+three cases above. The genome has size $G$ and every nucleotide matches
+the query with probability $1/4$ if it is unrelated to the target, and
+with probability $\lambda$ if it is a paralog. For convenience, we also
+denote the probability of a random hit of size less than $m$ as $\xi(m) =
+1-1/4^m$.
 
 In case $i.$, the observed value is $m$ if there is a match of size $m$
 with the paralog at one end of the read, and a match of size $\geq m$ at
@@ -379,7 +380,7 @@ P_3 = \big(1-\xi(m+1)^G\big) \big(\xi(m+1)^G - \xi(m)^G\big).
 \end{align*}
 
 Finally, to compute the probability of case $i.$ given the observed value
-of $m$, we use Bayes formula with prior odds in proportion $1:1:8$ because
+of $m$, we use Bayes' formula with prior odds in proportion $1:1:8$ because
 we estimate that the probability that a sequence has exactly one paralog
 is approximately $1/10$ (remember that those calculations are performed
 when there is evidence that $N \leq 20$).
@@ -414,33 +415,33 @@ seeds (Figure~\ref{fig_MEM}).
 \begin{center}
 \includegraphics[scale=.6]{MEM_19.pdf}
 \end{center}
-\caption{Projected performance of MEM seeds. The probability that the
-target is not in the candidate set after seeding  is plotted against the
-size of the read (notice the log scale on the $y$ axis). Computations are
-carried out with \texttt{sesame} for MEM seeds of minimum size 19,
-assuming an error rate of 1\% and a divergence rate of 6\% between
-paralogs (the probability that a given nucleotide of the target is
-different in a given paralog is 0.06). Each line represents the
-probabilities for a different number $N$ of paralogs. Note that the
-asymptotic decay is approximately constant up to $N = 20$ and slows down
-for larger $N$.}
+\caption{Projected performance of MEM seeds. The probability of filtering
+out the target is plotted against the size of the read (notice the log
+scale on the $y$ axis). Computations are carried out with \texttt{sesame}
+for MEM seeds of minimum size 19, assuming an error rate of 1\% and a
+divergence rate of 6\% between paralogs (\textit{i.e.} the probability
+that a given nucleotide of the target is different in a given paralog is
+0.06). Each line represents the probabilities for a different number $N$
+of paralogs. Note that the asymptotic decay is approximately constant up
+to $N = 20$ and slows down for larger $N$.}
 \label{fig_MEM}
 \end{figure}
 
 The results reveal two essential insights: The first is that the
 asymptotic decay of the failure rate is approximately constant when the
-read maps to a location with 20 or fewer duplicates. Beyond this, the
+read maps to a location with $N \leq 20$ paralogs. Beyond this, the
 asymptotic decay slows down and the recall decreases markedly. The second
 insight is that up to 100 nucleotides, the failure rate is always above 1
-error per 100,000 reads. In other words, there is no hope to map a read
-with very high confidence using MEM seeds if the target has a paralog.
+mapping error per 100,000 reads. In other words, there is no hope to map a
+read with very high confidence using MEM seeds if the target has a
+paralog.
 
 These insights suggest that an efficient strategy is to use a fast mapping
-mode when the target has many duplicates because the read cannot be mapped
-with high confidence anyway. In contrast, when the number of duplicates is
+mode when the target has many paralogs because the read cannot be mapped
+with high confidence anyway. In contrast, when the number of paralogs is
 low, it is important to know whether the target is a unique sequence
 because this is the only way to map a read with high confidence. So after
-MEM seeding, our strategy is to quickly estimate the number of duplicates,
+MEM seeding, our strategy is to quickly estimate the number of paralogs,
 find a decent candidate location as fast as possible and finally estimate
 how reliable this location is. In essence, we search the reads that
 can be mapped with high confidence instead of searching a high-confidence
@@ -452,17 +453,17 @@ Figure~\ref{fig_tree}.
 \includegraphics[scale=.8]{decision_tree.pdf}
 \end{center}
 \caption{Proposed strategy for a faithful mapper. Each read is routed
-through a different mapping pathway. First, all the MEM seeds are
+through one of three mapping pathways. First, all the MEM seeds are
 extracted (top). Then the number $N$ of paralogs of the target is
 estimated. If $N$ is 20 or less (left branch), all the candidates are
 tested with the Needleman-Wunsch algorithm. Once the best candidate is
 found, the probability that it is unique is estimated. If it is high and
 the alignment has no mismatch, mapping quality is computed using
-(\ref{eq_super}). If the best candidate is not unique or if the alignment
-has a mismatch, mapping quality is computed using (\ref{eq_bayes}) or
-(\ref{eq_x0}). If $N$ is higher than 20 (right branch), only the largest
-MEM seed is used and the mapping quality is computed using (\ref{eq_low}).
-}
+expression (\ref{eq_super}). If the best candidate is not unique or if the
+alignment has a mismatch, mapping quality is computed using expression
+(\ref{eq_bayes}) or (\ref{eq_x0}). If $N$ is higher than 20 (right
+branch), only the largest MEM seed is used and the mapping quality is
+computed using expression (\ref{eq_low}).}
 \label{fig_tree}
 \end{figure}
 
@@ -471,7 +472,7 @@ MEM seed is used and the mapping quality is computed using (\ref{eq_low}).
 \label{sec_N}
 
 The key in the flow chart of Figure~\ref{fig_tree} is to dispatch the
-reads based the number $N$ of paralogs of the target, which is an
+reads based on the number $N$ of paralogs of the target, which is an
 indirect measure of the mappability of the read~\cite{pmid22276185}.
 Estimating $N$ must be fast so that this step does not become a
 bottleneck. To achieve this, we propose to use the seeding process itself.
@@ -480,7 +481,7 @@ search~\cite{ferragina2000opportunistic}, an algorithm that returns the
 number of hits in the genome as the query is extended backward. If the
 target has no or few paralogs (Figure~\ref{fig_back}a), the number of hits
 will quickly go below 2 (when there is only one hit, it is most likely the
-target itself). In contrast, if the target has many paralogs in the genome
+target itself). In contrast, if the target has many paralogs
 (Figure~\ref{fig_back}b), the number of hits will remain at 2 or above for
 many additional iterations.
 
@@ -490,8 +491,8 @@ many additional iterations.
 \end{center}
 \caption{Estimating $N$ with the backward search. \textbf{(a)} The target
 has no or few paralogs. It takes only a few iterations until the backward
-search (BWS) finds fewer than 2 hits in the genome. \textbf{(b)} the
-target has many paralogs. In this case it takes more iteration before the
+search (BWS) finds fewer than 2 hits in the genome. \textbf{(b)} The
+target has many paralogs. In this case it takes more iterations before the
 query has fewer than 2 hits. The number of iterations above the threshold
 is used as a statistic to estimate $N$.}
 \label{fig_back}
@@ -510,12 +511,12 @@ sequence without paralog in the genome is very likely to be mapped to the
 correct location.
 
 We designed another estimation procedure based on the backward search,
-where this time we use the best candidate location and not the read as a
-query. The principle, sketched in Figure~\ref{fig_supertest}a, is to
+where this time we use the best candidate location as a query instead of
+the read. The principle, sketched in Figure~\ref{fig_supertest}a, is to
 perform the backward search on 20-mers and to test whether the genome
-contains a single hit. The rationale is that the
-total number of 20-mers is approximately $10^{12}$, so the chances of
-spurious random hits are very low, even in the largest known genomes.
+contains a single hit. The rationale is that the total number of 20-mers
+is approximately $10^{12}$, so the chances of spurious random hits are
+very low, even in the largest known genomes.
 
 For a complete test, the proposed location of the read is segmented in
 20-mers overlapping by 10 nucleotides, as shown in
@@ -544,9 +545,9 @@ property of the test depicted in Figure~\ref{fig_supertest}. To see why
 they can be mapped with such confidence, consider a read aligning
 perfectly to an incorrect sequence of the genome. Observe that for
 this to happen, the read must contain one or more errors that are perfectly
-compensated in some duplicate of the target. This can only happen if $i.$
-the target has a duplicate, $ii.$ the read contains an error, $iii.$ this
-error matches the duplicate and $iv.$ the target and the duplicate are
+compensated in some paralog of the target. This can only happen if $i.$
+the target has a paralog, $ii.$ the read contains an error, $iii.$ this
+error matches the paralog and $iv.$ the target and the paralog are
 otherwise identical.
 
 \begin{figure*}[t]
@@ -572,14 +573,14 @@ But those conditions are not sufficient to make a read \emph{super}. As
 shown in Figure~\ref{fig_supread}a, the mapping location would not be
 considered unique because there would exist at least one 20-mer where the
 target and its dupliate are identical. For a read of size 50, the
-duplicate can be overlooked only if there are at least two errors in the
+paralog can be overlooked only if there are at least two errors in the
 read that match the paralog.
 
 But as shown in Figure~\ref{fig_supread}b, this is still not sufficient
 for a wrongly mapped read to qualify as \emph{super}. For this, every
 second 10-mer must contain an error that is exactly compensatd in the
-duplicate, as indicated in Figure~\ref{fig_supread}c. In this
-configuration, the errors mask the presence of a duplicate on all the
+paralog, as indicated in Figure~\ref{fig_supread}c. In this
+configuration, the errors mask the presence of a paralog on all the
 tested 20-mers and the incorrect target location is considered unique.
 There are other scenarios where a super read is mapped to an incorrect
 location, but they involve even more compensated errors so they can be
@@ -936,7 +937,7 @@ The present work focuses on general mapping tasks in eukaryotic genomes,
 but faithful read mappers may find much more interesting applications,
 such as when the reference contains several variants of the same
 sequences. This is the case for the genome of hybrid species or of
-heterozygote individuals where each sequence has $N \geq 1$ duplicates in
+heterozygote individuals where each sequence has $N \geq 1$ paralogs in
 the reference. In this case, the challenge is to estimate the confidence
 that the read maps to one genome or the other. MMP could be used for this
 kind of problem, but a more specialized method that capitalizes on the key
@@ -950,7 +951,7 @@ Another case of interest is when the DNA sample is contaminated and needs
 to be mapped to several species. This occurs when working with primates
 because experimenters can contaminate the biological material with their
 own DNA, or simply when the source of the DNA is unknown. In such cases,
-only few sequences are expected to have no duplicate in the reference. In
+only few sequences are expected to have no paralog in the reference. In
 particular, if the genomes of interest are relatively close, the copy
 number will usually be equal to the number of genomes. In such cases, a
 general faithful mapper such as MMP is expected to give decent results,
