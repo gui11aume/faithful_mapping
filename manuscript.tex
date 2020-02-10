@@ -154,13 +154,26 @@ accuracy.
 
 \section{MATERIALS AND METHODS}
 
-\subsection{Estimating $N$ from the backward search}
+\subsection{Estimating the number of duplicates}
+
+The main source of uncertainty in the measurements of mapping quality
+estimation is the existence of sequence duplicates. Duplicates are groups
+of sequences that are not exactly identical but share high levels of
+similarity, likely because they co-evolved together or resulted from
+horizontal DNA transfer events. Duplicate sequences are hard to map
+reliably because the similarities between the read and the secondary
+candidate references are not negligible. At the same time, the exact
+probability that the read originated from one of the duplicates is
+difficult to quantify in practice. In this section we introduce a method
+to estimate the number of duplicates of a sequence. This estimate is
+crucial in the whole process of mapping quality computation because the
+number of duplicates will be the main determinant of the quality range.
 
 We assume that the true location of the read is a sequence of the genome
 that has $N \geq 0$ duplicates. For every nucleotide, the probability that
 a duplicate differs from the target is a constant $\mu$, and the
 probability that the read differs from the target is a constant $p$. We
-further assume that the genome has size $G$ and that its composition is a
+further assume that the genome has size $G$ and that its composition is an
 equiprobable random mix of the four nucleotides.
 
 For every nucleotide, the probability that the read differs from a given
@@ -197,29 +210,39 @@ above.
 
 \subsection{Computing MAPQ}
 
+Based on the estimate of the number of duplicates, we define three
+different groups of reads. The mapping quality for each read group
+is computed differently because the dominant mapping uncertainty
+depends on the number of duplicates.
+
 \subsubsection{Super quality} Super reads are defined as reads that
 satisfy the two following conditions: 20-mers extracted every 10
 nucleotides all have a single hit in the genome (see the Results section
 and Figure~\ref{fig_supertest}), and the read is mapped without mismatch.
-
-Super reads are mapped to an incorrect location if $i.$ the target has
-exactly one duplicate, $ii.$ the read contains $m$ errors, $iii.$ the
-paralog differs from the target exactly at the $m$ locations of the
-errors, $iv.$ the $m$ incorrect nucleotides match the paralog, and $v.$
-the $m$ errors are in the odd-numbered 10-mers of the read. The
-justification for these conditions are explained in more detail in
+Super reads are mapped to an incorrect location iif:
+\begin{enumerate}
+  \item the read contains $m$ errors
+  \item the target has exactly one duplicate
+  \item the duplicate differs from the target exactly at the $m$ locations
+    of the errors
+  \item the $m$ incorrect nucleotides match the sequence of the duplicate
+  \item the $m$ errors are in the odd-numbered 10-mers of the read
+\end{enumerate}
+The justification for these conditions are explained in more detail in
 Figure~\ref{fig_supread}.
 
-Condition $v.$ imposes $m = 1 + \lfloor L/20 \rfloor$ for a read of size
-$L$. The probability of $i.$ is denoted $\alpha$. The probability of $ii.$
-is ${L \choose m}p^m(1-p)^{L-m}$, where $p$ is the error rate of the
-sequencer. The probability of $iii.$ is $\mu^m(1-\mu)^{L-m}$, where $\mu$
-is the probability that the duplicate differs from the target. The
-probability of $iv.$ is $1/3^m$. The probability of $v.$ is $10^m/{L
-\choose m}$. We need to multiply those terms together and divide them by
-the probability that a read is super, which is fraction $\beta$ of the
-probability that a read has no error. The mapping quality of super reads
-is finally computed as
+The last condition imposes $m = 1 + \lfloor L/20 \rfloor$ for a read of size
+$L$. The probability of condition $1$ is denoted $\alpha$. The probability
+of condition $2$ is ${L \choose m}p^m(1-p)^{L-m}$, where $p$ is the error
+rate of the read sequencer. The probability of condition $3$ is
+$\mu^m(1-\mu)^{L-m}$, where $\mu$ is the probability that the duplicate
+differs from the target. The probability of condition $4$ is $1/3^m$ and the
+probability of condition $5$ is $10^m/{L\choose m}$.
+
+We need to multiply the probability of each condition together and divide
+them by the probability that a read is a \emph{super read}, which is fraction
+$\beta$ of the probability that a read has no error. The mapping quality of
+super reads is finally computed as
 \begin{align}
 \label{eq_super}
 \frac{\alpha}{\beta} \left( \frac{3.33 \cdot p\mu}{1-p}
@@ -258,7 +281,7 @@ $a-b=x \cdot \log(p/\lambda)+(L-x) \cdot \log((1-p)/(1-\lambda))$, and
 where $P(N \geq 1)$ is a probability computed during the estimation of $N$
 (see below).
 
-It was verified empirically, that expression (\ref{eq_bayes}) is an
+It was verified empirically that expression (\ref{eq_bayes}) is an
 overestimate when $x = 0$. In this case, the estimate is replaced by a
 direct approach where we compute the probability that a paralog matches
 the read perfectly. More specifically, we compute the probability that the
@@ -278,9 +301,9 @@ gives a high proability that MEM seeding fails for reads of size 50--150.
 \subsubsection{Low quality} Reads with initial estimate $N > 20$ are
 mapped by checking only the longest MEM seed. A seed of size $S$ exists if
 there are $S$ nucleotides without error or if there are $S$ nucleotides
-with an error matching at least one of the $N$ paralogs. In the first
-case, the target is discovered, in the second it is not. We also have to
-count whether seed is limited by errors or by the end of the read.
+with possibly many errors matching at least one of the $N$ paralogs. In the
+first case, the target is discovered, in the second it is not. We also have
+to account whether the seed is flanked by errors or by the end of the read.
 The probability of the first case is
 \begin{align*}
 P_{\text{hit}} = \delta_L \cdot (1-p)^S \cdot \delta_R,
@@ -288,7 +311,7 @@ P_{\text{hit}} = \delta_L \cdot (1-p)^S \cdot \delta_R,
 where $\delta_{L/R} = 1$ if the seed is flanked by the end of the read and
 $p$ otherwise.
 
-Counting only the most frequent case with a single error, the probability
+Considering only the most frequent case with a single error, the probability
 of the second case is
 \begin{equation*}
 \begin{split}
@@ -298,15 +321,15 @@ P_{\text{miss}} = \; &\delta_L \cdot Sp(1-p)^{S-1} \cdot \delta_R  \\
 \end{split}
 \end{equation*}
 where $\lambda$ is defined as above, and where $\delta_{L/R}' = 1$ if the
-seed is flanked by the end of the read and $\lambda$ otherwise. Applying
-Bayes' formula, the mapping quality is finally computed as
+seed is flanked by the end of the read and $\delta_{L/R}' = \lambda$ otherwise.
+Applying Bayes' formula, the mapping quality is finally computed as
 
 \begin{align}
 \label{eq_low}
 \frac{P_{\text{miss}}}{P_{\text{hit}} + P_{\text{miss}}}.
 \end{align}
 
-\subsubsection{Estimating $P(N \geq 1)$.} This quantity appears in
+\subsubsection{Estimating $P(N \geq 1)$} This quantity appears in
 expressions (\ref{eq_bayes}) and (\ref{eq_x0}). The estimate is based on
 the method shown in Figure~\ref{fig_back}, where we use the end of the
 read with the shortest query. We consider three cases: $i.$ the target has
@@ -364,80 +387,6 @@ when there is evidence that $N \leq 20$).
 \begin{align*}
 P(N \geq 1) = \frac{P_1}{P_1 + P_2 + 8\cdot P_3}.
 \end{align*}
-
-
-\subsection{MMP implementation}
-
-MMP is implemented as a stand-alone C program including the code of
-\texttt{sesame}~\cite{Filion619155} and of
-\texttt{divsufsort}~\cite{fischer2017dismantling}. MMP uses a standard
-implementation of the FM-index for the genome and its reverse complement,
-as detailed in~\cite{blog}, and of the Needleman-Wunsch
-algorithm~\cite{pmid5420325}, with the modification that the algorithm is
-interrupted if the score rises above that of the current best hit. During
-indexing, the backward search~\cite{ferragina2000opportunistic} is carried
-out on all possible 12-mers and the results are stored so that the first
-12 iterations of every query can be skipped during the mapping.
-
-The implementation otherwise follows the flow chart of
-Figure~\ref{fig_tree} using the formula above, with two differences.
-The first is that super reads can have 0, 1 or two mismatches, as long as
-all the extracted 20-mers have a single hit in the genome. How mapping
-quality is computed in those cases is described in the Supplementary
-Material. The second difference is that once the best hit is found, $N$ is
-estimated again on the genome instead of the read, and the higher of the
-two estimates is kept.
-
-\subsection{Benchmark}
-
-\subsubsection{Genomes and data sets}
-
-The main characteristic of the genomes used for benchmark
-(\textit{Drosophila melanogaster}, \textit{Homo sapiens} and \textit{Pinus
-taeda}) are summarized in Table~\ref{table_genomes}.
-
-\begin{table}[b]
-\tableparts{%
-\caption{Features of the genomes used for benchmark.}
-\label{table_genomes}%
-}{%
-\begin{tabular*}{\columnwidth}{@{}llrr}
-\toprule
-Organism & Reference & Size & Sequences \\
-\colrule
-\textit{Drosophila melanogaster} & dm4/R6 & 150~Mbp & 1,870 \\
-\textit{Homo sapiens} & hg38/GRCh38 & 3.27~Gbp & 455 \\
-\textit{Pinus taeda} & GCA\_000404065.3 & 22.50~Gbp & 1,760,464 \\
-\botrule
-\end{tabular*}%
-}
-{}
-\end{table}
-
-The data sets used for benchmark consist of 50 million sequences drawn
-uniformly at random from each genome. To simulate sequencing errors,
-nucleotides were randomly substituted with a fixed probability; there were
-no insertions or deletions. For each data set, the sequences have the same
-length (50, 75 or 100 nucleotides) and the same error rate (1\%, 2\%, 5\%
-or 10\%).
-
-\subsubsection{Software}
-
-We used BWA-MEM version 0.7.9a-r786~\cite{li2013aligning}, Bowtie 2
-version 2.3.5.1~\cite{pmid22388286}, and MMP version 1.0. The genomes were
-indexed with default parameters for each mapper. For the benchmark proper,
-all the mappers were run in single thread. BWA-MEM and Bowtie2 were always
-used with default options, and the \texttt{-e} flag of MMP was used to
-specify the error rate of the data set, \textit{e.g.}, \texttt{-e .02} for
-a 2\% error rate.
-
-\subsubsection{Hardware}
-
-All the mapping experiments were run on a Hewlett Packard Z800 workstation
-with 64~bit Intel Xeon CPU X5675 at 3.07~GHz, with 64~GB of DDR3 RAM,
-12~MB of cache, and running Linux Ubuntu 18.04.3. Indexing the pine genome
-with MMP had to be done on a machine with 512~GB of RAM because of the
-high memory footprint used by the library \texttt{divsufsort}.
 
 
 \section{RESULTS}
@@ -767,6 +716,79 @@ time on low-confidence reads. Taken together, our results thus show that
 faithful mapping is not only a viable strategy, it also opens
 opportunities for further optimizations that can make the mapping process
 more efficient.
+
+\subsection{MMP implementation}
+
+MMP is implemented as a stand-alone C program including the code of
+\texttt{sesame}~\cite{Filion619155} and of
+\texttt{divsufsort}~\cite{fischer2017dismantling}. MMP uses a standard
+implementation of the FM-index for the genome and its reverse complement,
+as detailed in~\cite{blog}, and of the Needleman-Wunsch
+algorithm~\cite{pmid5420325}, with the modification that the algorithm is
+interrupted if the score rises above that of the current best hit. During
+indexing, the backward search~\cite{ferragina2000opportunistic} is carried
+out on all possible 12-mers and the results are stored so that the first
+12 iterations of every query can be skipped during the mapping.
+
+The implementation otherwise follows the flow chart of
+Figure~\ref{fig_tree} using the formula above, with two differences.
+The first is that super reads can have 0, 1 or two mismatches, as long as
+all the extracted 20-mers have a single hit in the genome. How mapping
+quality is computed in those cases is described in the Supplementary
+Material. The second difference is that once the best hit is found, $N$ is
+estimated again on the genome instead of the read, and the higher of the
+two estimates is kept.
+
+\subsection{Benchmark}
+
+\subsubsection{Genomes and data sets}
+
+The main characteristic of the genomes used for benchmark
+(\textit{Drosophila melanogaster}, \textit{Homo sapiens} and \textit{Pinus
+taeda}) are summarized in Table~\ref{table_genomes}.
+
+\begin{table}[b]
+\tableparts{%
+\caption{Features of the genomes used for benchmark.}
+\label{table_genomes}%
+}{%
+\begin{tabular*}{\columnwidth}{@{}llrr}
+\toprule
+Organism & Reference & Size & Sequences \\
+\colrule
+\textit{Drosophila melanogaster} & dm4/R6 & 150~Mbp & 1,870 \\
+\textit{Homo sapiens} & hg38/GRCh38 & 3.27~Gbp & 455 \\
+\textit{Pinus taeda} & GCA\_000404065.3 & 22.50~Gbp & 1,760,464 \\
+\botrule
+\end{tabular*}%
+}
+{}
+\end{table}
+
+The data sets used for benchmark consist of 50 million sequences drawn
+uniformly at random from each genome. To simulate sequencing errors,
+nucleotides were randomly substituted with a fixed probability; there were
+no insertions or deletions. For each data set, the sequences have the same
+length (50, 75 or 100 nucleotides) and the same error rate (1\%, 2\%, 5\%
+or 10\%).
+
+\subsubsection{Software}
+
+We used BWA-MEM version 0.7.9a-r786~\cite{li2013aligning}, Bowtie 2
+version 2.3.5.1~\cite{pmid22388286}, and MMP version 1.0. The genomes were
+indexed with default parameters for each mapper. For the benchmark proper,
+all the mappers were run in single thread. BWA-MEM and Bowtie2 were always
+used with default options, and the \texttt{-e} flag of MMP was used to
+specify the error rate of the data set, \textit{e.g.}, \texttt{-e .02} for
+a 2\% error rate.
+
+\subsubsection{Hardware}
+
+All the mapping experiments were run on a Hewlett Packard Z800 workstation
+with 64~bit Intel Xeon CPU X5675 at 3.07~GHz, with 64~GB of DDR3 RAM,
+12~MB of cache, and running Linux Ubuntu 18.04.3. Indexing the pine genome
+with MMP had to be done on a machine with 512~GB of RAM because of the
+high memory footprint used by the library \texttt{divsufsort}.
 
 
 \section{DISCUSSION}
