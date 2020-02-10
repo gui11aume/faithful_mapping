@@ -433,7 +433,7 @@ read maps to a location with 20 or fewer duplicates. Beyond this, the
 asymptotic decay slows down and the recall decreases markedly. The second
 insight is that up to 100 nucleotides, the failure rate is always above 1
 error per 100,000 reads. In other words, there is no hope to map a read
-with high confidence using MEM seeds if the target has a paralog.
+with very high confidence using MEM seeds if the target has a paralog.
 
 These insights suggest that an efficient strategy is to use a fast mapping
 mode when the target has many duplicates because the read cannot be mapped
@@ -442,7 +442,7 @@ low, it is important to know whether the target is a unique sequence
 because this is the only way to map a read with high confidence. So after
 MEM seeding, our strategy is to quickly estimate the number of duplicates,
 find a decent candidate location as fast as possible and finally estimate
-how reliable this location is. In other words, we search the reads that
+how reliable this location is. In essence, we search the reads that
 can be mapped with high confidence instead of searching a high-confidence
 location for every read. A high-level summary of this strategy is shown in
 Figure~\ref{fig_tree}.
@@ -482,7 +482,7 @@ target has no or few paralogs (Figure~\ref{fig_back}a), the number of hits
 will quickly go below 2 (when there is only one hit, it is most likely the
 target itself). In contrast, if the target has many paralogs in the genome
 (Figure~\ref{fig_back}b), the number of hits will remain at 2 or above for
-may iterations.
+many additional iterations.
 
 \begin{figure}[t]
 \begin{center}
@@ -513,7 +513,7 @@ We designed another estimation procedure based on the backward search,
 where this time we use the best candidate location and not the read as a
 query. The principle, sketched in Figure~\ref{fig_supertest}a, is to
 perform the backward search on 20-mers and to test whether the genome
-contains a single hit (the candidate location). The rationale is that the
+contains a single hit. The rationale is that the
 total number of 20-mers is approximately $10^{12}$, so the chances of
 spurious random hits are very low, even in the largest known genomes.
 
@@ -542,8 +542,8 @@ as we called them, were those aligning perfectly to a unique location.
 The extremely high mapping quality of super reads comes from an unexpected
 property of the test depicted in Figure~\ref{fig_supertest}. To see why
 they can be mapped with such confidence, consider a read aligning
-perfectly with an incorrect sequence of the genome. Observe that for
-this to happen, the read must contain an error that is perfectly
+perfectly to an incorrect sequence of the genome. Observe that for
+this to happen, the read must contain one or more errors that are perfectly
 compensated in some duplicate of the target. This can only happen if $i.$
 the target has a duplicate, $ii.$ the read contains an error, $iii.$ this
 error matches the duplicate and $iv.$ the target and the duplicate are
@@ -589,7 +589,10 @@ neglected.
 \subsection{MEM Mapper Prototype}
 
 We implemented the mapping strategy presented in Figure~\ref{fig_tree} in
-a prototype mapper called MEM Mapper Prototype (MMP). We used plain
+a prototype mapper called MEM Mapper Prototype (MMP). MMP is implemented
+as a stand-alone C program including the code of
+\texttt{sesame}~\cite{Filion619155} and of
+\texttt{divsufsort}~\cite{fischer2017dismantling}. We used plain
 mapping algorithms to better highlight the benefits of building a mapper
 for faithfulness. The index consists of a standard FM-index of the genome
 and its reverse complement~\citep[the implementation is detailed in
@@ -602,6 +605,67 @@ the score of the current best hit is exceeded (continuing the algorithm is
 useless to find the optimal location of the read). Mapping quality is
 computed as detailed in the Materials and Methods section.
 
+The implementation otherwise follows the flow chart of
+Figure~\ref{fig_tree} using the formulae above, with two differences.
+The first is that super reads can have 0, 1 or two mismatches, as long as
+all the extracted 20-mers have a single hit in the genome. How mapping
+quality is computed in those cases is described in the Supplementary
+Material. The second difference is that once the best hit is found, $N$ is
+estimated again using the genomic sequence instead of the read, and the
+higher of the two estimates is kept.
+
+\subsection{Benchmark}
+
+\subsubsection{Genomes and data sets}
+
+The main characteristic of the genomes used for benchmark
+(\textit{Drosophila melanogaster}, \textit{Homo sapiens} and \textit{Pinus
+taeda}) are summarized in Table~\ref{table_genomes}.
+
+\begin{table}[b]
+\tableparts{%
+\caption{Features of the genomes used for benchmark.}
+\label{table_genomes}%
+}{%
+\begin{tabular*}{\columnwidth}{@{}llrr}
+\toprule
+Organism & Reference & Size & Sequences \\
+\colrule
+\textit{Drosophila melanogaster} & dm4/R6 & 150~Mbp & 1,870 \\
+\textit{Homo sapiens} & hg38/GRCh38 & 3.27~Gbp & 455 \\
+\textit{Pinus taeda} & GCA\_000404065.3 & 22.50~Gbp & 1,760,464 \\
+\botrule
+\end{tabular*}%
+}
+{}
+\end{table}
+
+The data sets used for benchmark consist of 50 million sequences drawn
+uniformly at random from each genome. To simulate sequencing errors,
+nucleotides were randomly substituted with a fixed probability; there were
+no insertions or deletions. For each data set, the sequences have the same
+length (50, 75 or 100 nucleotides) and the same error rate (1\%, 2\%, 5\%
+or 10\%).
+
+\subsubsection{Software}
+
+We used BWA-MEM version 0.7.9a-r786~\cite{li2013aligning}, Bowtie 2
+version 2.3.5.1~\cite{pmid22388286}, and MMP version 1.0. The genomes were
+indexed with default parameters for each mapper. For the benchmark proper,
+all the mappers were run in single thread. BWA-MEM and Bowtie2 were always
+used with default options, and the \texttt{-e} flag of MMP was used to
+specify the error rate of the data set, \textit{e.g.}, \texttt{-e .02} for
+a 2\% error rate.
+
+\subsubsection{Hardware}
+
+All the mapping experiments were run on a Hewlett Packard Z800 workstation
+with 64~bit Intel Xeon CPU X5675 at 3.07~GHz, with 64~GB of DDR3 RAM,
+12~MB of cache, and running Linux Ubuntu 18.04.3. Indexing the pine genome
+with MMP had to be done on a machine with 512~GB of RAM because of the
+high memory footprint used by the library \texttt{divsufsort}.
+
+\subsubsection{Benchmark results}
 We set up a test using the genomes of \textit{Drosophila melanogaster}
 (the fruit fly), \textit{homo sapiens} (modern humans) and \textit{Pinus
 taeda} (a north American species of pine). The high-level features of the
@@ -672,7 +736,6 @@ melanogaster}), of modern humans (\textit{H. sapiens}) or of the pine
 \label{fig_acc}
 \end{figure}
 
-
 Finally, it is important to evaluate the impact of faithfulness in terms
 of accuracy, speed and memory footprint. Figure~\ref{fig_acc} shows that
 the accuracy of MMP is competitive with that of BWA-MEM and Bowtie2
@@ -717,86 +780,12 @@ faithful mapping is not only a viable strategy, it also opens
 opportunities for further optimizations that can make the mapping process
 more efficient.
 
-\subsection{MMP implementation}
-
-MMP is implemented as a stand-alone C program including the code of
-\texttt{sesame}~\cite{Filion619155} and of
-\texttt{divsufsort}~\cite{fischer2017dismantling}. MMP uses a standard
-implementation of the FM-index for the genome and its reverse complement,
-as detailed in~\cite{blog}, and of the Needleman-Wunsch
-algorithm~\cite{pmid5420325}, with the modification that the algorithm is
-interrupted if the score rises above that of the current best hit. During
-indexing, the backward search~\cite{ferragina2000opportunistic} is carried
-out on all possible 12-mers and the results are stored so that the first
-12 iterations of every query can be skipped during the mapping.
-
-The implementation otherwise follows the flow chart of
-Figure~\ref{fig_tree} using the formula above, with two differences.
-The first is that super reads can have 0, 1 or two mismatches, as long as
-all the extracted 20-mers have a single hit in the genome. How mapping
-quality is computed in those cases is described in the Supplementary
-Material. The second difference is that once the best hit is found, $N$ is
-estimated again on the genome instead of the read, and the higher of the
-two estimates is kept.
-
-\subsection{Benchmark}
-
-\subsubsection{Genomes and data sets}
-
-The main characteristic of the genomes used for benchmark
-(\textit{Drosophila melanogaster}, \textit{Homo sapiens} and \textit{Pinus
-taeda}) are summarized in Table~\ref{table_genomes}.
-
-\begin{table}[b]
-\tableparts{%
-\caption{Features of the genomes used for benchmark.}
-\label{table_genomes}%
-}{%
-\begin{tabular*}{\columnwidth}{@{}llrr}
-\toprule
-Organism & Reference & Size & Sequences \\
-\colrule
-\textit{Drosophila melanogaster} & dm4/R6 & 150~Mbp & 1,870 \\
-\textit{Homo sapiens} & hg38/GRCh38 & 3.27~Gbp & 455 \\
-\textit{Pinus taeda} & GCA\_000404065.3 & 22.50~Gbp & 1,760,464 \\
-\botrule
-\end{tabular*}%
-}
-{}
-\end{table}
-
-The data sets used for benchmark consist of 50 million sequences drawn
-uniformly at random from each genome. To simulate sequencing errors,
-nucleotides were randomly substituted with a fixed probability; there were
-no insertions or deletions. For each data set, the sequences have the same
-length (50, 75 or 100 nucleotides) and the same error rate (1\%, 2\%, 5\%
-or 10\%).
-
-\subsubsection{Software}
-
-We used BWA-MEM version 0.7.9a-r786~\cite{li2013aligning}, Bowtie 2
-version 2.3.5.1~\cite{pmid22388286}, and MMP version 1.0. The genomes were
-indexed with default parameters for each mapper. For the benchmark proper,
-all the mappers were run in single thread. BWA-MEM and Bowtie2 were always
-used with default options, and the \texttt{-e} flag of MMP was used to
-specify the error rate of the data set, \textit{e.g.}, \texttt{-e .02} for
-a 2\% error rate.
-
-\subsubsection{Hardware}
-
-All the mapping experiments were run on a Hewlett Packard Z800 workstation
-with 64~bit Intel Xeon CPU X5675 at 3.07~GHz, with 64~GB of DDR3 RAM,
-12~MB of cache, and running Linux Ubuntu 18.04.3. Indexing the pine genome
-with MMP had to be done on a machine with 512~GB of RAM because of the
-high memory footprint used by the library \texttt{divsufsort}.
-
-
 \section{DISCUSSION}
 
 Here we designed and implemented a strategy to map short reads faithfully.
 The principles are based on key insight gained from models to compute
 seeding probabilities~\cite{Filion619155}, showing that MEM seeds are
-efficient only when the target has few paralogues (Figure~\ref{fig_MEM}).
+efficient only when the target has few paralogs (Figure~\ref{fig_MEM}).
 This motivates the design of a strategy where we first estimate the copy
 number of the target (Figure~\ref{fig_back}) to dispatch reads to
 different mapping subroutines (Figure~\ref{fig_tree}). This amounts to
