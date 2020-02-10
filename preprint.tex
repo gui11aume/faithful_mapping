@@ -1,39 +1,26 @@
-\documentclass[a4,center,fleqn]{NAR}
-
-% Enter dates of publication
-\copyrightyear{2020}
-\pubdate{31 December 2020}
-\pubyear{2020}
-\jvolume{XX}
-\jissue{YY}
-
-%\articlesubtype{This is the article type (optional)}
+\documentclass[english]{article}
+\usepackage{amsmath}
+\usepackage{authblk}
+\usepackage[margin=1.3in]{geometry}
+\usepackage{graphicx}
+\usepackage[square,numbers]{natbib}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
 
 \begin{document}
 
 \title{Mapping short reads, faithfully}
 
-\author{%
-Eduard Valera Zorita\,$^1$,
-Ruggero Cortini\,$^1$,
-Guillaume J. Filion\,$^{1,2,3}$
-\footnote{To whom correspondence should be addressed.
-Email: guillaume.filion@gmail.com}}
+\author[1]{Eduard~Valera~Zorita}
+\author[1]{Ruggero~Cortini}
+\author[1,2,3,*]{Guillaume~J.~Filion}
 
-\address{%
-$^{1}$Center for Genomic Regulation (CRG), The Barcelona Institute
-of Science and Technology, Dr. Aiguader 88, Barcelona 08003, Spain;
-$^{2}$University Pompeu Fabra (UPF), Barcelona, Spain;
-$^{3}$present address: Department of Biological Sciences, University
+\affil[1]{Center for Genomic Regulation (CRG), The Barcelona Institute
+of Science and Technology, Dr. Aiguader 88, Barcelona 08003, Spain}
+\affil[2]{University Pompeu Fabra (UPF), Barcelona, Spain}
+\affil[3]{present address: Department of Biological Sciences, University
 of Toronto Scarborough, Toronto, ON, Canada.}
-% Affiliation must include:
-% Department name, institution name, full road and district address,
-% state, Zip or postal code, country
-
-\history{%
-Received January 1, 2009;
-Revised February 1, 2009;
-Accepted March 1, 2009}
+\affil[*]{Correspondence: guillaume.filion@gmail.com}
 
 \maketitle
 
@@ -53,7 +40,7 @@ approach highlights the existence of a class of reads that can be mapped
 with unprecedented confidence. We exploit this strategy in a prototype
 mapper that is competitive with state-of-the-art mappers BWA-MEM and
 Bowtie2, with the benefit of faithfulness. The software is open-source and
-available at
+available for download at
 \url{https://github.com/gui11aume/mmp}.
 \end{abstract}
 
@@ -414,7 +401,7 @@ the filtration step, we used the \texttt{sesame}
 library~\cite{Filion619155} to sketch the projected performance of MEM
 seeds (Figure~\ref{fig_MEM}).
 
-\begin{figure}[t]
+\begin{figure}[h]
 \begin{center}
 \includegraphics[scale=.6]{MEM_19.pdf}
 \end{center}
@@ -451,7 +438,7 @@ can be mapped with high confidence instead of searching a high-confidence
 location for every read. A high-level summary of this strategy is shown in
 Figure~\ref{fig_tree}.
 
-\begin{figure}[t]
+\begin{figure}[h]
 \begin{center}
 \includegraphics[scale=.8]{decision_tree.pdf}
 \end{center}
@@ -488,7 +475,7 @@ target itself). In contrast, if the target has many paralogs
 (Figure~\ref{fig_back}b), the number of hits will remain at 2 or above for
 many additional iterations.
 
-\begin{figure}[t]
+\begin{figure}[h]
 \begin{center}
 \includegraphics[scale=.84]{pushing_backward.pdf}
 \end{center}
@@ -526,7 +513,7 @@ For a complete test, the candidate location of the read is segmented in
 Figure~\ref{fig_supertest}b. The sequence is considered unique if all the
 extracted 20-mers have a single hit in the genome.
 
-\begin{figure}[t]
+\begin{figure}[h]
 \begin{center}
 \includegraphics[scale=.75]{supertest.pdf}
 \end{center}
@@ -554,9 +541,9 @@ the target has a paralog, $ii.$ the read contains an error, $iii.$ this
 error matches the paralog and $iv.$ the target and the paralog are
 otherwise identical.
 
-\begin{figure*}[t]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[scale=.79]{super_reads.pdf}
+\includegraphics[scale=.63]{super_reads.pdf}
 \end{center}
 \caption{Properties of super reads. \textbf{(a)} Incorrect alignment with
 no mismatch. For a read to align perfectly to an incorrect sequence, it
@@ -571,7 +558,7 @@ errors are in odd-numbered 10-mers (grey boxes), then all the extracted
 20-mers are unique and the read is super. Those conditions are exceedingly
 rare, so super reads are mapped with high confidence.}
 \label{fig_supread}
-\end{figure*}
+\end{figure}
 
 But those conditions are not sufficient to make a read \emph{super}. As
 shown in Figure~\ref{fig_supread}a, the mapping location would not be
@@ -629,21 +616,16 @@ assemblies, and pine as a non-model organism with a very complex genome
 and a draft assembly.
 
 \begin{table}[b]
-\tableparts{%
+\centering
 \caption{Features of the genomes used for benchmark.}
 \label{table_genomes}%
-}{%
-\begin{tabular*}{\columnwidth}{@{}llrr}
-\toprule
+\begin{tabular}{@{}llrr}
 Organism & Reference & Size & Sequences \\
-\colrule
+\hline
 \textit{Drosophila melanogaster} & dm4/R6 & 150~Mbp & 1,870 \\
 \textit{Homo sapiens} & hg38/GRCh38 & 3.27~Gbp & 455 \\
 \textit{Pinus taeda} & GCA\_000404065.3 & 22.50~Gbp & 1,760,464 \\
-\botrule
-\end{tabular*}%
-}
-{}
+\end{tabular}
 \end{table}
 
 The data sets used for the benchmark consist of 50 million sequences drawn
@@ -668,9 +650,9 @@ with 64~bit Intel Xeon CPU X5675 at 3.07~GHz, with 64~GB of DDR3 RAM,
 with MMP had to be done on a machine with 512~GB of RAM because of the
 high memory footprint used by the library \texttt{divsufsort}.
 
-\begin{figure*}[t]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[scale=.24]{fig_faith.pdf}
+\includegraphics[scale=.2]{fig_faith.pdf}
 \end{center}
 \caption{Faithfulness with 1\% error rate. The observed mapping quality
 (MAPQ) is plotted against the value computed by MMP, BWA-MEM or Bowtie2.
@@ -684,7 +666,7 @@ the expected number of errors was higher than 1 (we should observe errors
 but we did not), otherwise the observed mapping quality was set to the
 claimed mapping quality (we should not observe errors and we did not).}
 \label{fig_faith}
-\end{figure*}
+\end{figure}
 
 We measured faithfulness by comparing observed versus claimed MAPQ score
 on simulated data. Figure~\ref{fig_faith} shows a series of scatter plots
@@ -710,9 +692,9 @@ at 2\% error rate, but it decreases substantially at 5\% and 10\% error
 rates, showing that our strategy is valid only within the scope of current
 short-read sequencing technologies.
 
-\begin{figure}[t]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[scale=.54]{fig_acc.pdf}
+\includegraphics[scale=.6]{fig_acc.pdf}
 \end{center}
 \caption{Mapping accuracy with 1\% error rate. Plotted in each panel is
 the cumulative fraction of the reads above a certain mapping quality for
@@ -740,9 +722,9 @@ performance of MMP is more variable (Supplementary Figures~3 and 4). Those
 results show that optimizing for faithfulness can resut in good
 performance for accuracy.
 
-\begin{figure}[t]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[scale=.58]{fig_timem.pdf}
+\includegraphics[scale=.7]{fig_timem.pdf}
 \end{center}
 \caption{Resource usage at 1\% error rate. \textbf{(a)} Speed. The running
 time is plotted for MMP, BWA-MEM or Bowtie2. The data is showed for reads
@@ -980,45 +962,7 @@ acknowledge the financial support of the MEIC to the EMBL partnership, the
 Centro de Excelencia Severo Ochoa and the CERCA Programme / Generalitat de
 Catalunya.
 
-
-
-
-\subsubsection{Conflict of interest statement.} None declared.
-\newpage
-
 \bibliography{references,pubmed}
 \bibliographystyle{nar}
-
-%\begin{thebibliography}{4}
-%
-%% Format for article
-%\bibitem{1}
-%Author,A.B. and Author,C. (1992)
-%Article title.
-%\textit{Abbreviated Journal Name}, \textbf{5}, 300--330.
-%
-%% Format for book
-%\bibitem{2}
-%Author,D., Author,E.F. and Author,G. (1995)
-%\textit{Book Title}.
-%Publisher Name, Publisher Address.
-%
-%% Format for chapter in book
-%\bibitem{3}
-%Author,H. and Author,I. (2005)
-%Chapter title.
-%In
-%Editor,A. and Editor,B. (eds),
-%\textit{Book Title},
-%Publisher Name, Publisher Address,
-%pp.\ 60--80.
-%
-%% Another article
-%\bibitem{4}
-%Author,Y. and Author,Z. (2002)
-%Article title.
-%\textit{Abbreviated Journal Name}, \textbf{53}, 500--520.
-%
-%\end{thebibliography}
 
 \end{document}
