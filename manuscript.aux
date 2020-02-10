@@ -10,7 +10,6 @@
 \citation{pmid27043002}
 \citation{pmid19505943}
 \citation{pmid23104886}
-\citation{pmid23103880}
 \citation{ACGT}
 \citation{QCFail}
 \citation{dunno}
@@ -31,57 +30,57 @@
 \citation{blog}
 \citation{pmid5420325}
 \citation{ferragina2000opportunistic}
+\newlabel{eq_x0}{{{\bf  4}}{3}}
+\@writefile{toc}{\contentsline {subsubsection}{Low quality}{3}}
+\newlabel{eq_low}{{{\bf  5}}{3}}
+\@writefile{toc}{\contentsline {subsubsection}{Estimating $P(N \geq 1)$.}{3}}
+\@writefile{toc}{\contentsline {subsection}{MMP implementation}{3}}
 \citation{li2013aligning}
 \citation{pmid22388286}
 \citation{Filion619155}
 \citation{Filion619155}
-\newlabel{eq_x0}{{{\bf  4}}{3}}
-\@writefile{toc}{\contentsline {subsubsection}{Low quality}{3}}
-\newlabel{eq_low}{{{\bf  5}}{3}}
-\@writefile{toc}{\contentsline {subsection}{MMP implementation}{3}}
-\@writefile{toc}{\contentsline {subsection}{Benchmark}{3}}
-\@writefile{toc}{\contentsline {subsubsection}{Genomes and data sets}{3}}
-\@writefile{toc}{\contentsline {subsubsection}{Software}{3}}
-\@writefile{toc}{\contentsline {subsubsection}{Hardware}{3}}
-\@writefile{toc}{\contentsline {section}{RESULTS}{3}}
-\@writefile{toc}{\contentsline {subsection}{General design principle of a faithful mapper}{3}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Features of the genomes used for benchmark.}}{3}}
-\newlabel{table_genomes}{{1}{3}}
+\citation{pmid22276185}
 \citation{ferragina2000opportunistic}
+\@writefile{toc}{\contentsline {subsection}{Benchmark}{4}}
+\@writefile{toc}{\contentsline {subsubsection}{Genomes and data sets}{4}}
+\@writefile{toc}{\contentsline {subsubsection}{Software}{4}}
+\@writefile{toc}{\contentsline {subsubsection}{Hardware}{4}}
+\@writefile{toc}{\contentsline {section}{RESULTS}{4}}
+\@writefile{toc}{\contentsline {subsection}{General design principle of a faithful mapper}{4}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Features of the genomes used for benchmark.}}{4}}
+\newlabel{table_genomes}{{1}{4}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Projected performance of MEM seeds. The probability that the target is not in the candidate set after seeding is plotted against the size of the read (notice the log scale on the $y$ axis). Computations are carried out with \texttt  {sesame} for MEM seeds of minimum size 19, assuming an error rate of 1\% and a divergence rate of 6\% between paralogs (the probability that a given nucleotide of the target is different in a given paralog is 0.06). Each line represents the probabilities for a different number $N$ of paralogs. Note that the asymptotic decay is approximately constant up to $N = 20$ and slows down for larger $N$.}}{4}}
 \newlabel{fig_MEM}{{1}{4}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Proposed strategy for a faithful mapper. Each read is routed through a different mapping pathway. First, all the MEM seeds are extracted (top). Then the number $N$ of paralogs of the target is estimated. If $N$ is 20 or less (left branch), all the candidates are tested with the Needleman-Wunsch algorithm. Once the best candidate is found, the probability that it is unique is estimated. If it is high and the alignment has no mismatch, mapping quality is computed using ({\bf  2}\hbox {}). If the best candidate is not unique or if the alignment has a mismatch, mapping quality is computed using ({\bf  3}\hbox {}) or ({\bf  4}\hbox {}). If $N$ is higher than 20 (right branch), only the largest MEM seed is used and the mapping quality is computed using ({\bf  5}\hbox {}). }}{4}}
-\newlabel{fig_tree}{{2}{4}}
-\@writefile{toc}{\contentsline {subsection}{Estimating $N$}{4}}
-\newlabel{sec_N}{{}{4}}
-\@writefile{toc}{\contentsline {subsection}{Super reads}{4}}
-\newlabel{sec_super}{{}{4}}
-\citation{blog}
-\citation{pmid5420325}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Proposed strategy for a faithful mapper. Each read is routed through a different mapping pathway. First, all the MEM seeds are extracted (top). Then the number $N$ of paralogs of the target is estimated. If $N$ is 20 or less (left branch), all the candidates are tested with the Needleman-Wunsch algorithm. Once the best candidate is found, the probability that it is unique is estimated. If it is high and the alignment has no mismatch, mapping quality is computed using ({\bf  2}\hbox {}). If the best candidate is not unique or if the alignment has a mismatch, mapping quality is computed using ({\bf  3}\hbox {}) or ({\bf  4}\hbox {}). If $N$ is higher than 20 (right branch), only the largest MEM seed is used and the mapping quality is computed using ({\bf  5}\hbox {}). }}{5}}
+\newlabel{fig_tree}{{2}{5}}
+\@writefile{toc}{\contentsline {subsection}{Estimating $N$}{5}}
+\newlabel{sec_N}{{}{5}}
+\@writefile{toc}{\contentsline {subsection}{Super reads}{5}}
+\newlabel{sec_super}{{}{5}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Estimating $N$ with the backward search. \textbf  {(a)} The target has no or few paralogs. It takes only a few iterations until the backward search (BWS) finds fewer than 2 hits in the genome. \textbf  {(b)} the target has many paralogs. In this case it takes more iteration before the query has fewer than 2 hits. The number of iterations above the threshold is used as a statistic to estimate $N$.}}{5}}
 \newlabel{fig_back}{{3}{5}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Test for uniqueness. \textbf  {(a)} Basic principle. After the alignment stage, the sequence of the best hit is segmented in 20-mers. The uniqueness of a given 20-mer is tested with the backward search. \textbf  {(b)} Complete test. The genomic location returned by the search process is considered to be unique if all the 20-mers overlapping by 10 nucleotides are unique.}}{5}}
 \newlabel{fig_supertest}{{4}{5}}
-\@writefile{toc}{\contentsline {subsection}{MEM Mapper Prototype}{5}}
+\citation{blog}
+\citation{pmid5420325}
 \citation{Filion619155}
-\citation{Filion619155}
+\citation{pmid22276185}
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Properties of super reads. \textbf  {(a)} Incorrect perfect alignment. For a read to align perfectly to an incorrect sequence, the read must contain an error (star in the read) and the incorrect nucleotide must match a paralog (star in the hit). This is not a super read because some extracted 20-mers are not unique (red arrows). \textbf  {(b)} Incorrect perfect alignment with several errors. Adding compensated errors is not always sufficient to make 20-mers unique. To much space between errors can leave 20-mers that are not unique, in which case the read is not super. \textbf  {(c)} Incorrectly mapped super reads. If the compensated errors are in odd-numbered 10-mers (grey boxes), then all the extracted 20-mers are unique and the read is super. Those conditions are exceedingly rare, so super reads are mapped with high confidence.}}{6}}
 \newlabel{fig_supread}{{5}{6}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Faithfulness with 1\% error rate. The observed mapping quality (MAPQ) is plotted against the value computed by MMP, BWA-MEM or Bowtie2. The data is showed for reads of size 100, 75 or 50, sampled from the genome of the fruit fly (\textit  {D. melanogaster}), of modern humans (\textit  {H. sapiens}) or of the pine (\textit  {P. taeda}). The size of the circle is proportional to the number of reads in the given category. Pink circles indicate that no mapping error was observed, so that the observed mapping quality was undefined. In this case one pseudo error was added if the expected number of errors was higher than 1 (we should observe errors but we did not), otherwise the observed mapping quality was set to the claimed mapping quality (we should not observe errors and we did not).}}{6}}
-\newlabel{fig_faith}{{6}{6}}
-\@writefile{toc}{\contentsline {section}{DISCUSSION}{6}}
+\@writefile{toc}{\contentsline {subsection}{MEM Mapper Prototype}{6}}
 \citation{Filion619155}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Faithfulness with 1\% error rate. The observed mapping quality (MAPQ) is plotted against the value computed by MMP, BWA-MEM or Bowtie2. The data is showed for reads of size 100, 75 or 50, sampled from the genome of the fruit fly (\textit  {D. melanogaster}), of modern humans (\textit  {H. sapiens}) or of the pine (\textit  {P. taeda}). The size of the circle is proportional to the number of reads in the given category. Pink circles indicate that no mapping error was observed, so that the observed mapping quality was undefined. In this case one pseudo error was added if the expected number of errors was higher than 1 (we should observe errors but we did not), otherwise the observed mapping quality was set to the claimed mapping quality (we should not observe errors and we did not).}}{7}}
+\newlabel{fig_faith}{{6}{7}}
 \@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Mapping accuracy with 1\% error rate. Plotted in each panel is the cumulative fraction of the reads above a certain mapping quality for MMP, BWA-MEM or Bowtie2. The score is computed empirically by sorting the reads on MAPQ and computing the average mapping quality of the reads in the top $x$\% for all values of $x$. The data is showed for reads of size 100, 75 or 50, sampled from the genome of the fruit fly (\textit  {D. melanogaster}), of modern humans (\textit  {H. sapiens}) or of the pine (\textit  {P. taeda}).}}{7}}
 \newlabel{fig_acc}{{7}{7}}
+\@writefile{toc}{\contentsline {section}{DISCUSSION}{7}}
 \@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Resource usage at 1\% error rate. \textbf  {(a)} Speed. The running time is plotted for MMP, BWA-MEM or Bowtie2. The data is showed for reads of size 100, 75 or 50, sampled from the genome of the fruit fly (\textit  {D. melanogaster}), of modern humans (\textit  {H. sapiens}) or of the pine (\textit  {P. taeda}). \textbf  {(b)} Memory usage. The peak memory footprint is plotted for the different mappers with reads from different genomes (the memory footprint is the same for all read sizes).}}{7}}
 \newlabel{fig_timem}{{8}{7}}
 \@writefile{toc}{\contentsline {subsection}{Estimating MAPQ}{7}}
-\@writefile{toc}{\contentsline {subsection}{Performance}{7}}
+\citation{Filion619155}
 \citation{pmid2231712}
+\@writefile{toc}{\contentsline {subsection}{Performance}{8}}
 \@writefile{toc}{\contentsline {subsection}{Benefits of faithul mapping}{8}}
-\@writefile{toc}{\contentsline {section}{CONCLUSION}{8}}
-\@writefile{toc}{\contentsline {section}{ACKNOWLEDGEMENTS}{8}}
-\@writefile{toc}{\contentsline {subsubsection}{Conflict of interest statement.}{8}}
 \bibdata{references,pubmed}
 \bibcite{pmid30084865}{{1}{}{{}}{{}}}
 \bibcite{Wikillu}{{2}{}{{}}{{}}}
@@ -94,25 +93,18 @@
 \bibcite{pmid27043002}{{9}{}{{}}{{}}}
 \bibcite{pmid19505943}{{10}{}{{}}{{}}}
 \bibcite{pmid23104886}{{11}{}{{}}{{}}}
-\bibcite{pmid23103880}{{12}{}{{}}{{}}}
-\bibcite{ACGT}{{13}{}{{}}{{}}}
-\bibcite{QCFail}{{14}{}{{}}{{}}}
-\bibcite{Filion619155}{{15}{}{{}}{{}}}
-\bibcite{flajolet2009analytic}{{16}{}{{}}{{}}}
-\bibcite{fischer2017dismantling}{{17}{}{{}}{{}}}
-\bibcite{blog}{{18}{}{{}}{{}}}
-\bibcite{pmid5420325}{{19}{}{{}}{{}}}
-\bibcite{pmid2231712}{{20}{}{{}}{{}}}
+\bibcite{ACGT}{{12}{}{{}}{{}}}
+\bibcite{QCFail}{{13}{}{{}}{{}}}
+\bibcite{Filion619155}{{14}{}{{}}{{}}}
+\bibcite{fischer2017dismantling}{{15}{}{{}}{{}}}
+\bibcite{blog}{{16}{}{{}}{{}}}
+\bibcite{pmid5420325}{{17}{}{{}}{{}}}
+\bibcite{pmid22276185}{{18}{}{{}}{{}}}
+\bibcite{pmid2231712}{{19}{}{{}}{{}}}
 \bibstyle{nar}
-\@writefile{toc}{\contentsline {section}{\numberline {\relax }REFERENCES}{9}}
-\@writefile{toc}{\contentsline {subsection}{Supplementary Material}{10}}
-\@writefile{toc}{\contentsline {subsubsection}{Computing $P(N \geq 1)$.}{10}}
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Resource usage at 2, 5 and 10\% error rate. The representations are otherwise as in Figure\nobreakspace  {}8\hbox {} (the memory footprint does not depend on the error rate of the sequencing process).}}{11}}
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Mapping accuracy with 2\% error rate. The representations are otherwise as in Figure\nobreakspace  {}7\hbox {}.}}{12}}
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Mapping accuracy with 5\% error rate. The representations are otherwise as in Figure\nobreakspace  {}7\hbox {}.}}{12}}
-\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Mapping accuracy with 10\% error rate. The representations are otherwise as in Figure\nobreakspace  {}7\hbox {}.}}{12}}
 \global\NAT@numberstrue
-\global\@namedef{@lastpage}{13}
-\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Faithfulness with 2\% error rate. The representations are otherwise the same as in Figure\nobreakspace  {}6\hbox {}.}}{13}}
-\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Faithfulness with 5\% error rate. The representations are otherwise the same as in Figure\nobreakspace  {}6\hbox {}.}}{13}}
-\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Faithfulness with 10\% error rate. The representations are otherwise the same as in Figure\nobreakspace  {}6\hbox {}.}}{13}}
+\global\@namedef{@lastpage}{9}
+\@writefile{toc}{\contentsline {section}{CONCLUSION}{9}}
+\@writefile{toc}{\contentsline {section}{ACKNOWLEDGEMENTS}{9}}
+\@writefile{toc}{\contentsline {subsubsection}{Conflict of interest statement.}{9}}
+\@writefile{toc}{\contentsline {section}{\numberline {\relax }REFERENCES}{9}}

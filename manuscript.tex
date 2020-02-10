@@ -2,10 +2,10 @@
 
 % Enter dates of publication
 \copyrightyear{2020}
-\pubdate{1 January 2020}
+\pubdate{31 December 2020}
 \pubyear{2020}
-\jvolume{37}
-\jissue{12}
+\jvolume{XX}
+\jissue{YY}
 
 %\articlesubtype{This is the article type (optional)}
 
@@ -14,8 +14,8 @@
 \title{Mapping short reads, faithfully}
 
 \author{%
-Eduard Valera Zorita\,$^{1,\text{\#}}$,
-Ruggero Cortini\,$^{1,\text{\#}}$,
+Eduard Valera Zorita\,$^1$,
+Ruggero Cortini\,$^1$,
 Guillaume J. Filion\,$^{1,2,3}$
 \footnote{To whom correspondence should be addressed.
 Email: guillaume.filion@gmail.com}}
@@ -25,8 +25,7 @@ $^{1}$Center for Genomic Regulation (CRG), The Barcelona Institute
 of Science and Technology, Dr. Aiguader 88, Barcelona 08003, Spain;
 $^{2}$University Pompeu Fabra (UPF), Barcelona, Spain;
 $^{3}$present address: Department of Biological Sciences, University
-of Toronto Scarborough, Toronto, ON, Canada; $^{\text{\#}}$ equal
-contributions.}
+of Toronto Scarborough, Toronto, ON, Canada.}
 % Affiliation must include:
 % Department name, institution name, full road and district address,
 % state, Zip or postal code, country
@@ -43,19 +42,18 @@ Mapping is the process of finding the original location of a DNA read in a
 reference sequence, typically a genome. Short read mappers are used in
 most applications of high-throughput sequencing. As such, they must be
 continuously improved to keep up with increasing needs. To gain speed,
-mappers rely on a heuristic known as seeding, which has a small
-probability of causing mapping errors. For lack of a method to compute
-such probabilities, mappers have so far used \textit{ad hoc}
-approximations of variable quality. Here we devise the elements of a
-strategy to map short reads faithfully, \textit{i.e.}, to provide accurate
-probabilities of mapping errors. The key is to estimate the number of
-paralogus of the target so as to spend more time on the reads that can be
-mapped with high confidence. This strategy highlights the existence of a
-class of reads that can be mapped with unprecedented confidence. We
-implement this strategy in a prototype mapper that is competitive with
-state-of-the-art mappers BWA-MEM and Bowtie2, with the benefit of
-faithfulness. The software is open-source and availble from
-\url{https://github.com/gui11aume/smmfdp}.
+many mappers rely on seeding heuristics that can negatively affect the
+mapping accuracy. For lack of a method to compute such probabilities,
+mappers have so far used \textit{ad hoc} approximations of variable
+quality. Here we devise the elements of a strategy to map short reads
+faithfully, \textit{i.e.}, to provide accurate probabilities of mapping
+errors. The key is to estimate the number of paralogus of the target so as
+to spend more time on the reads that can be mapped with high confidence.
+This strategy highlights the existence of a class of reads that can be
+mapped with unprecedented confidence. We implement this strategy in a
+prototype mapper that is competitive with state-of-the-art mappers BWA-MEM
+and Bowtie2, with the benefit of faithfulness. The software is open-source
+and availble from \url{https://github.com/gui11aume/smmfdp}.
 \end{abstract}
 
 
@@ -103,10 +101,15 @@ sense that a faithful algorithm is not necessarily accurate and
 The importance of faithfulness is recognized in the specifications of the
 SAM format \cite{pmid19505943}, featuring a mandatory \emph{mapping
 quality} field MAPQ, defined as ``$-10 \cdot \log_{10}Pr$\{mapping
-position is wrong\}''. However, there is presently no way to estimate this
-probability, and therefore no way to respect the standard. Some mappers
+position is wrong\}''. However, the proposed methods to estimate this
+probability are accurate only for some genomes and some sequencing
+technologies.
+THIS NEEDS TO BE WRITTEN BETTER.
+%However, there is presently no way to estimate this
+%probability, and therefore no way to respect the standard.
+Some mappers
 like STAR~\cite{pmid23104886} use the MAPQ field as a qualitative scale.
-Some others like GEM~\cite{pmid23103880} do not provide a mapping quality.
+%Some others like GEM~\cite{pmid23103880} do not provide a mapping quality.
 As for the mappers aiming to comply with the SAM standard, the scores are
 undocumented, variable between mappers and versions, often spreading
 puzzlement and frustration in the community~\cite{ACGT, QCFail}.
@@ -252,8 +255,8 @@ P(N \geq 1) \cdot \frac{P_s}{P_s + (1-P_s)e^{\min(a-b,1)}},
 \end{align}
 where $P_s$ is the prior probability provided by \texttt{sesame}, where
 $a-b=x \cdot \log(p/\lambda)+(L-x) \cdot \log((1-p)/(1-\lambda))$, and
-where $P(N \geq 1)$ is a probability computed during the estimation of $N$ (see
-the Supplementary Material for more detail).
+where $P(N \geq 1)$ is a probability computed during the estimation of $N$
+(see below).
 
 It was verified empirically, that expression (\ref{eq_bayes}) is an
 overestimate when $x = 0$. In this case, the estimate is replaced by a
@@ -282,8 +285,8 @@ The probability of the first case is
 \begin{align*}
 P_{\text{hit}} = \delta_L \cdot (1-p)^S \cdot \delta_R,
 \end{align*}
-where $\delta_{L/R} = 1$ if the seed is flanked by the end of the read and $p$
-otherwise.
+where $\delta_{L/R} = 1$ if the seed is flanked by the end of the read and
+$p$ otherwise.
 
 Counting only the most frequent case with a single error, the probability
 of the second case is
@@ -302,6 +305,65 @@ Bayes' formula, the mapping quality is finally computed as
 \label{eq_low}
 \frac{P_{\text{miss}}}{P_{\text{hit}} + P_{\text{miss}}}.
 \end{align}
+
+\subsubsection{Estimating $P(N \geq 1)$.} This quantity appears in
+expressions (\ref{eq_bayes}) and (\ref{eq_x0}). The estimate is based on
+the method shown in Figure~\ref{fig_back}, where we use the end of the
+read with the shortest query. We consider three cases: $i.$ the target has
+a paralog, $ii.$ only one end of the target has a paralog, and $iii.$ the
+target is unique. Case $ii.$ can occur when the read straddles the end of
+a transposon or other repeated sequence. We consider that $N \geq 1$ only
+in case $i.$ where the sequence has a full-length paralog.
+
+We denote $m$ the longest query size with two more more hits in the genome
+(see Figure~\ref{fig_back}) and we write $P(m)$ in the three cases above.
+The genome has size $G$ and every nucleotide matches the query with
+probability $1/4$ if it is unrelated to the target, and with probability
+$\lambda$ if it is a paralog. For convenience, we also define the
+probability of a random hit of size less than $m$ as $\xi(m) = 1-1/4^m$.
+
+In case $i.$, the observed value is $m$ if there is a match of size $m$
+with the paralog at one end of the read, and a match of size $\geq m$ at
+the other end, and a match of size $< m$ with the rest of the genome;
+or if the match with the paralog has length $< m$ at both ends of the
+read, and there is a match of size $m$ with the rest of the genome; or if
+there is a match of size $m$ with the paralog at one end of the read, and
+a match of size $\geq m$ at the other end, and a match of size $m$ with
+the rest of the genome. In case $i.$, $P(m)$ is thus
+\begin{align*}
+P_1 = \lambda (1-\lambda)^{2m} \xi(m)^G + \\
+\big(1-(1-\lambda)^m\big)(1-\lambda)^m \big(\xi(m+1)^G - \xi(m)^G\big) + \\
+\lambda (1-\lambda)^{2m} \big(\xi(m+1)^G - \xi(m)^G\big).
+\end{align*}
+
+In case $ii.$, the observed value is $m$ if there is a match of size $\geq
+m$ with the paralog at the duplicated end, and a match of size $m$ with
+the rest of the genome at the other end; or if there is a match of size $<
+m$ with the paralog at the duplicated end, and a match of size $m$ with
+the rest of the genome at any end, and a match of size $\geq m$ at the
+other end. In case $ii.$, $P(m)$ is thus
+\begin{align*}
+P_2 = (1-\lambda)^m \big((\xi(m+1)^G - \xi(m)^G\big) + \\
+\big(1-(1-\lambda)^m\big) \big(\xi(m+1)^G - \xi(m)^G\big)
+\big(1 - \xi(m)^G\big).
+\end{align*}
+
+In case $iii.$, the observed value is $m$ if there is a random match of
+size $m$ with the genome at one end of the read, and a random match of
+size $\geq m$ at the other end. In case $iii.$, $P(m)$ is thus
+\begin{align*}
+P_3 = \big(1-\xi(m+1)^G\big) \big(\xi(m+1)^G - \xi(m)^G\big).
+\end{align*}
+
+Finally, to compute the probability of case $i.$ given the observed value
+of $m$, we use Bayes formula with prior odds in proportion $1:1:8$ because
+we estimate that the probability that a sequence has exactly one paralog
+is approximately $1/10$ (remember that those calculations are performed
+when there is evidence that $N \leq 20$).
+
+\begin{align*}
+P(N \geq 1) = \frac{P_1}{P_1 + P_2 + 8\cdot P_3}.
+\end{align*}
 
 
 \subsection{MMP implementation}
@@ -460,16 +522,18 @@ MEM seed is used and the mapping quality is computed using (\ref{eq_low}).
 \label{sec_N}
 
 The key in the flow chart of Figure~\ref{fig_tree} is to dispatch the
-reads based on $N$, the number of paralogs of the target. Estimating $N$
-must be fast so that this step does not become a bottleneck. To achieve
-this, we propose to use the seeding process itself. MEM seeds are best
-computed using the backward search~\cite{ferragina2000opportunistic}, an
-algorithm that returns the number of hits in the genome as the query is
-extended backward. If the target has no or few paralogs
-(Figure~\ref{fig_back}a), the number of hits will quickly go below 2 (when
-there is only one hit, it is most likely the target itself). In contrast,
-if the target has many paralogs in the genome (Figure~\ref{fig_back}b),
-the number of hits will remain at 2 or above for may iterations.
+reads based the number $N$ of paralogs of the target, which is an
+indirect measure of the mappability of the read~\cite{pmid22276185}.
+Estimating $N$ must be fast so that this step does not become a
+bottleneck. To achieve this, we propose to use the seeding process itself.
+MEM seeds are best computed using the backward
+search~\cite{ferragina2000opportunistic}, an algorithm that returns the
+number of hits in the genome as the query is extended backward. If the
+target has no or few paralogs (Figure~\ref{fig_back}a), the number of hits
+will quickly go below 2 (when there is only one hit, it is most likely the
+target itself). In contrast, if the target has many paralogs in the genome
+(Figure~\ref{fig_back}b), the number of hits will remain at 2 or above for
+may iterations.
 
 \begin{figure}[t]
 \begin{center}
@@ -686,9 +750,14 @@ genomes (the memory footprint is the same for all read sizes).}
 \end{figure}
 
 In terms of speed, MMP is 2--4 faster than BWA-MEM and Bowtie2 on the
-present data set (Figure~\ref{fig_timem}a) but the memory footprint is
-approximately 2--3 times higher (Figure~\ref{fig_timem}b), mostly because
-the reverse complement of the genome is added to the index.
+present data set (Figure~\ref{fig_timem}a), with a memory footprint that
+is approximately 2--3 times higher (Figure~\ref{fig_timem}b). Part of the
+speed up is due to the implementation and the larger stress on memory, but
+the strategy highlighted in Figure~\ref{fig_tree} aims to reduce the
+number of alignments when reads cannot be mapped accurately. For instance,
+MMP spends 8.3\% of the time on incorrectly mapped reads, versus 29.2\%
+and 12.5\% for BWA-MEM and Bowtie, respectively (100 nucleotide reads in
+the human genome, data not shown).
 
 Overall, Figures~\ref{fig_acc} and \ref{fig_timem} show that the
 investment in faithfulness is paid back in several ways: First, it gives
@@ -708,16 +777,18 @@ seeding probabilities~\cite{Filion619155}, showing that MEM seeds are
 efficient only when the target has few paralogues (Figure~\ref{fig_MEM}).
 This motivates the design of a strategy where we first estimate the copy
 number of the target (Figure~\ref{fig_back}) to dispatch reads to
-different mapping subroutines (Figure~\ref{fig_tree}). This process
-revealed the existence of super reads, \textit{i.e.}, reads that can be
-mapped with extremely high confidence (Figures~\ref{fig_supertest} and
-\ref{fig_supread}), together setting the basis of an efficient mapping
-strategy. We wrote a mapper based on this strategy and we showed that it
-is competitive with BWA-MEM and Bowtie (Figures~\ref{fig_faith},
-\ref{fig_acc} and \ref{fig_timem}). Importantly, the mapping process
-itself relies only on standard algorithm, so all the benefits of the
-mapper come from faithfulness. Overall, this demonstrates that improving
-faithfulness is a fruitful strategy to improve short-read mappers.
+different mapping subroutines (Figure~\ref{fig_tree}). This amounts to
+allocating more resources to the most mappable reads~\cite{pmid22276185}.
+This process revealed the existence of super reads, \textit{i.e.}, reads
+that can be mapped with extremely high confidence
+(Figures~\ref{fig_supertest} and \ref{fig_supread}), together setting the
+basis of an efficient mapping strategy. We wrote a mapper based on this
+strategy and we showed that it is competitive with BWA-MEM and Bowtie
+(Figures~\ref{fig_faith}, \ref{fig_acc} and \ref{fig_timem}). Importantly,
+the mapping process itself relies only on standard algorithm, so all the
+benefits of the mapper come from faithfulness. Overall, this demonstrates
+that improving faithfulness is a fruitful strategy to improve short-read
+mappers.
 
 
 \subsection{Estimating MAPQ}
@@ -888,7 +959,7 @@ research that can also bring benefits in speed and mapping quality.
 
 \section{ACKNOWLEDGEMENTS}
 
-We would like to thank Santiago Marco Sola, Catalina Romero and Nicholas
+We would like to thank Santiago Marco-Sola, Catalina Romero and Nicholas
 Stroustrup for their critical comments on the manuscript.
 This work was funded by the Spanish Ministry of Economy, Industry and
 Competitiveness (MEIC, Plan Estatal PGC2018-099807-B-I00) and by the
@@ -907,141 +978,6 @@ Catalunya.
 
 \bibliography{references,pubmed}
 \bibliographystyle{nar}
-
-\clearpage
-
-\subsection{Supplementary Material}
-\subsubsection{Computing $P(N \geq 1)$.}
-If the target is unique, the read is aligned against a random sequence
-whenever the mapping location is incorrect. In this case, it is easy to
-realize that the genomic sequence has no homology for the read. In
-practice we can consider that reads cannot be mapped incorrectly when the
-target is unique (they can be unmapped though). In other words, mapping
-errors are possible only if the target has at least one paralog,
-\textit{i.e.} if $N \geq 1$. As a consequence, the probability of a
-mapping error is proportial to $P(N \geq 1)$. This term is implicit in the
-mapping quality of super reads (\ref{eq_super}), and set to 1 for
-low-quality mapping in expression (\ref{eq_low}). In expressions
-(\ref{eq_bayes}) and (\ref{eq_x0}), it must be computed explicitly.
-
-The estimate is based on the method shown in Figure~\ref{fig_back}, where
-we use the end of the read with the shortest query. We consider three
-cases: $i.$ the target has a paralog, $ii.$ only one end of the target has
-a paralog, and $iii.$ the target is unique. Case $ii.$ can occur when the
-read straddles the end of a transposon or other repeated sequence. We
-consider that $N \geq 1$ only in case $i.$ where the sequence has a
-full-length paralog.
-
-We denote $m$ the longest query size with two more more hits in the genome
-(see Figure~\ref{fig_back}) and we write $P(m)$ in the three cases above.
-The genome has size $G$ and every nucleotide matches the query with
-probability $1/4$ if it is unrelated to the target, and with probability
-$\lambda$ if it is a paralog. For convenience, we also define the
-probability of a random hit of size less than $m$ as $\xi(m) = 1-1/4^m$.
-
-In case $i.$, the observed value is $m$ if there is a match of size $m$
-with the paralog at one end of the read, and a match of size $\geq m$ at
-the other end, and a match of size $< m$ with the rest of the genome;
-or if the match with the paralog has length $< m$ at both ends of the
-read, and there is a match of size $m$ with the rest of the genome; or if
-there is a match of size $m$ with the paralog at one end of the read, and
-a match of size $\geq m$ at the other end, and a match of size $m$ with
-the rest of the genome. In case $i.$, $P(m)$ is thus
-\begin{align*}
-P_1 = \lambda (1-\lambda)^{2m} \xi(m)^G + \\
-\big(1-(1-\lambda)^m\big)(1-\lambda)^m \big(\xi(m+1)^G - \xi(m)^G\big) + \\
-\lambda (1-\lambda)^{2m} \big(\xi(m+1)^G - \xi(m)^G\big).
-\end{align*}
-
-In case $ii.$, the observed value is $m$ if there is a match of size $\geq
-m$ with the paralog at the duplicated end, and a match of size $m$ with
-the rest of the genome at the other end; or if there is a match of size $<
-m$ with the paralog at the duplicated end, and a match of size $m$ with
-the rest of the genome at any end, and a match of size $\geq m$ at the
-other end. In case $ii.$, $P(m)$ is thus
-\begin{align*}
-P_2 = (1-\lambda)^m \big((\xi(m+1)^G - \xi(m)^G\big) + \\
-\big(1-(1-\lambda)^m\big) \big(\xi(m+1)^G - \xi(m)^G\big)
-\big(1 - \xi(m)^G\big).
-\end{align*}
-
-In case $iii.$, the observed value is $m$ if there is a random match of
-size $m$ with the genome at one end of the read, and a random match of
-size $\geq m$ at the other end. In case $iii.$, $P(m)$ is thus
-\begin{align*}
-P_3 = \big(1-\xi(m+1)^G\big) \big(\xi(m+1)^G - \xi(m)^G\big).
-\end{align*}
-
-Finally, to compute the probability of case $i.$ given the observed value
-of $m$, we use Bayes formula with prior odds in proportion $1:1:8$ because
-we estimate that the probability that a sequence has exactly one paralog
-is approximately $1/10$ (remember that those calculations are performed
-when there is evidence that $N \leq 20$).
-
-\begin{align*}
-P(N \geq 1) = \frac{P_1}{P_1 + P_2 + 8\cdot P_3}.
-\end{align*}
-
-\clearpage
-
-\begin{figure}
-\begin{center}
-\includegraphics[scale=.53]{timem_supp.pdf}
-\end{center}
-\caption{Resource usage at 2, 5 and 10\% error rate. The representations
-are otherwise as in Figure~\ref{fig_timem} (the memory footprint does not
-depend on the error rate of the sequencing process).}
-\end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[scale=.54]{accQ2_fig.pdf}
-\end{center}
-\caption{Mapping accuracy with 2\% error rate. The representations are
-otherwise as in Figure~\ref{fig_acc}.}
-\end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[scale=.54]{accQ5_fig.pdf}
-\end{center}
-\caption{Mapping accuracy with 5\% error rate. The representations are
-otherwise as in Figure~\ref{fig_acc}.}
-\end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[scale=.54]{accQ10_fig.pdf}
-\end{center}
-\caption{Mapping accuracy with 10\% error rate. The representations are
-otherwise as in Figure~\ref{fig_acc}.}
-\end{figure}
-
-\clearpage
-
-\begin{figure*}[t]
-\begin{center}
-\includegraphics[scale=.24]{faith_Q2.pdf}
-\end{center}
-\caption{Faithfulness with 2\% error rate. The representations are
-otherwise the same as in Figure~\ref{fig_faith}.}
-\end{figure*}
-
-\begin{figure*}[t]
-\begin{center}
-\includegraphics[scale=.24]{faith_Q5.pdf}
-\end{center}
-\caption{Faithfulness with 5\% error rate. The representations are
-otherwise the same as in Figure~\ref{fig_faith}.}
-\end{figure*}
-
-\begin{figure*}[t]
-\begin{center}
-\includegraphics[scale=.24]{faith_Q10.pdf}
-\end{center}
-\caption{Faithfulness with 10\% error rate. The representations are
-otherwise the same as in Figure~\ref{fig_faith}.}
-\end{figure*}
 
 %\begin{thebibliography}{4}
 %
