@@ -39,21 +39,21 @@ Accepted March 1, 2009}
 
 \begin{abstract}
 Mapping is the process of finding the original location of a DNA read in a
-reference sequence, typically a genome. Short read mappers are used in
-most applications of high-throughput sequencing. As such, they must be
-continuously improved to keep up with increasing needs. To gain speed,
-many mappers rely on seeding heuristics that can negatively affect the
-mapping accuracy. For lack of a method to compute such probabilities,
+reference sequence, typically a genome. Short read mappers are software tools
+used in most applications that involve high-throughput sequencing. As such, they
+must be continuously improved to keep up with increasing needs. Modern mappers
+rely on fast seeding heuristics that convert them in inexact algorithms.
+For lack of a method to compute the reliability of reported mapping locations,
 mappers have so far used \textit{ad hoc} approximations of variable
 quality. Here we devise the elements of a strategy to map short reads
-faithfully, \textit{i.e.}, to provide accurate probabilities of mapping
-errors. The key is to estimate the number of paralogus of the target so as
-to spend more time on the reads that can be mapped with high confidence.
-This strategy highlights the existence of a class of reads that can be
-mapped with unprecedented confidence. We implement this strategy in a
+faithfully, \textit{i.e.}, to provide accurate probabilities of mapping reliability.
+The key is to estimate the number of paralogs of the target reference sequence
+so as to identify these reads that can be mapped with high confidence.
+This approach highlights the existence of a class of reads that can be
+mapped with unprecedented confidence. We exploit this strategy in a
 prototype mapper that is competitive with state-of-the-art mappers BWA-MEM
 and Bowtie2, with the benefit of faithfulness. The software is open-source
-and availble from \url{https://github.com/gui11aume/smmfdp}.
+and availble at \url{https://github.com/gui11aume/smmfdp}.
 \end{abstract}
 
 
@@ -62,34 +62,35 @@ and availble from \url{https://github.com/gui11aume/smmfdp}.
 High throughput DNA sequencing is now a well-established technology with
 countless applications in industry and medicine~\cite{pmid30084865}. The
 Illumina short-read technology currently dominates the market of DNA
-sequencing, so the software exploiting this technology is an important
-target for optimization~\cite{Wikillu}.
+sequencing over newer technologies that promise longer reads at the
+expense of higher error rates. Software and tools exploiting this technology
+are therefore an important target for optimization~\cite{Wikillu}.
 
-After sequencing, reads are usually mapped to a known reference, typically
-a genome, using a software tool known as a mapper. The main challenge is
-that sequencers sometimes make mistakes, so mappers must solve an
-approximate string-matching problem. The traditional vision of mapping
-algorithms is to optimize speed and accuracy while maintaining a low
+In most analyses, sequencing reads are mapped to a known reference, typically
+a genome, using a software tool known as a mapper. Mappers are complex
+algorithms that must solve approximate string-matching problems, provided that
+the reads and the reference do not match perfectly due to biological divergence
+andn due to measurement errors of sequencing machinery. The traditional vision
+of mapping algorithms is to optimize speed and accuracy while maintaining a low
 memory footprint. From this perspective, a major breakthrough was the
 conception of the FM-index~\cite{ferragina2000opportunistic,
 ferragina2005indexing}, a data structure based on the Burrows-Wheeler
-transform~\cite{burrows1994block} and on the suffix
+transform~\cite{burrows1994block} and the suffix
 array~\cite{manber1993suffix}. Modern short-read mappers such as
 BWA-MEM~\cite{li2013aligning} and Bowtie2~\cite{pmid22388286} rely on
 specialized implementations of the FM-index for DNA sequences. More
-recently, new mapping algorithms for specific applications such as RNA-seq
-have further improved the speed and the accuracy in some
-areas~\cite{pmid27043002}.
+recently, new specialized algorithms such as RNA-seq mappers have further improved
+the speed and the accuracy for their specific applications~\cite{pmid27043002}.
 
 However, speed, accuracy and memory usage are not the only metrics that
 matter for mapping algorithms. Equally important is an attribute called
 \emph{faithfulness}.
 
 Faithfulness comes into play for heuristic algorithms, \textit{i.e.},
-algorithms that may return an incorrect result. We say that a heuristic is
-\emph{faithful} if it provides an accurate probability that the result is
-incorrect. Importantly, faithfulness is orthogonal to accuracy in the
-sense that a faithful algorithm is not necessarily accurate and
+algorithms that are not guaranteed to return a correct result. In this context,
+a heuristic is \emph{faithful} if it provides an accurate probability that the
+reported result is correct. Importantly, faithfulness is orthogonal to accuracy
+in the sense that a faithful algorithm is not necessarily accurate and
 \textit{vice versa}.
 
 % **************************************************************
@@ -101,24 +102,21 @@ sense that a faithful algorithm is not necessarily accurate and
 The importance of faithfulness is recognized in the specifications of the
 SAM format \cite{pmid19505943}, featuring a mandatory \emph{mapping
 quality} field MAPQ, defined as ``$-10 \cdot \log_{10}Pr$\{mapping
-position is wrong\}''. However, the proposed methods to estimate this
-probability are accurate only for some genomes and some sequencing
-technologies.
-THIS NEEDS TO BE WRITTEN BETTER.
-%However, there is presently no way to estimate this
-%probability, and therefore no way to respect the standard.
-Some mappers
-like STAR~\cite{pmid23104886} use the MAPQ field as a qualitative scale.
-%Some others like GEM~\cite{pmid23103880} do not provide a mapping quality.
-As for the mappers aiming to comply with the SAM standard, the scores are
+position is wrong\}''. However, there is presently no exact method to
+estimate these probabilities and most mappers rely on approximations
+that are accurate only for some specific genomes and sequencing technologies.
+The different implementations of mapping quality estimators are usually
 undocumented, variable between mappers and versions, often spreading
 puzzlement and frustration in the community~\cite{ACGT, QCFail}.
+Some mappers, like STAR~\cite{pmid23104886}, use the MAPQ field as a
+qualitative scale.
 
 As a consequence, mapping quality is often neglected by users and
 developpers, even though it is critical in many applications. For
 instance, when calling \textit{de novo} mutations, the standard procedure
-is to map sequencing reads to the genome of interest, and score mismatches
-as evidence for mutations. Mapping errors can also explain the mismatches,
+is to map sequencing reads to the genome of interest and identify mismatches
+as evidence for mutations. In this context, mapping errors cause artifacts that
+explain nonexistent mismatches,
 so the confidence in the final call is commensurate with the mapping
 quality. Inaccuracies of the MAPQ estimates cause recurrent errors in
 cancer genomics~\cite{dunno} where faithfulness would make a major
@@ -135,21 +133,20 @@ the locations of the reads.
 
 Improving the mapping process requires to understand why it is sometimes
 inaccurate in the first place. Mapping heuristics are usually based on a
-filtration strategy called \emph{seeding}, whereby short matches between
+filtration strategy called \emph{seeding}, whereby short exact matches between
 the read and the reference are used to extract a set of candidate
-locations. Seeding is error-prone because the correct location of the read
-may be filtered out. We recently developped a formal computational
+locations. Seeding is error-prone because errors in the read may cause correct
+location to be filtered out. We recently developped a formal computational
 framework to compute the error rate of different seeding strategies used
-for mapping short reads~\cite{Filion619155}. Missing from this framework
-was a method to estimate the unknown parameters of the model.
+for mapping short reads~\cite{Filion619155}.
 
-Here we propose a method to estimate those parameters and we implement it
-in a mapper called MEM Mapper Prototype (MMP) that aims to be faithful. We
-use MMP to study the feasibility of this strategy and we highlight the
-additional benefits gained from faithfulness. In the process, we discover
-a class of reads that can be mapped with extremely high confidence and we
-show that faithfulness can be achieved without sacrificing speed or
-accuracy.
+Here we propose a method to estimate the unknown parameters of our previous
+model and we implement it in a mapper called MEM Mapper Prototype (MMP) that
+aims to be faithful. We use MMP to study the feasibility of this
+strategy and we highlight the additional benefits gained from faithfulness.
+In the process, we discover a class of reads that can be mapped with extremely
+high confidence and we show that faithfulness can be achieved without sacrificing
+speed or accuracy.
 
 
 \section{MATERIALS AND METHODS}
